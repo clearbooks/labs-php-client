@@ -1,5 +1,5 @@
 <?php
-namespace Clearbooks\LabsPhpClient\Toggle\Gateway;
+namespace Clearbooks\LabsClient\Toggle\Gateway;
 
 class BaseToggleMock
 {

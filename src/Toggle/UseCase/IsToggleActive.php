@@ -1,5 +1,5 @@
 <?php
-namespace Clearbooks\LabsPhpClient\Toggle\UseCase;
+namespace Clearbooks\LabsClient\Toggle\UseCase;
 
 interface IsToggleActive
 {

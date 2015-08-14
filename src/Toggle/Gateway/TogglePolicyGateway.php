@@ -1,8 +1,8 @@
 <?php
-namespace Clearbooks\LabsPhpClient\Toggle\Gateway;
+namespace Clearbooks\LabsClient\Toggle\Gateway;
 
-use Clearbooks\LabsPhpClient\Toggle\Entity\Identity;
-use Clearbooks\LabsPhpClient\Toggle\UseCase\Response\TogglePolicyResponse;
+use Clearbooks\LabsClient\Toggle\Entity\Identity;
+use Clearbooks\LabsClient\Toggle\UseCase\Response\TogglePolicyResponse;
 
 interface TogglePolicyGateway
 {

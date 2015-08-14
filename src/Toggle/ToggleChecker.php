@@ -1,11 +1,11 @@
 <?php
-namespace Clearbooks\LabsPhpClient\Toggle;
+namespace Clearbooks\LabsClient\Toggle;
 
-use Clearbooks\LabsPhpClient\Toggle\Entity\Group;
-use Clearbooks\LabsPhpClient\Toggle\Entity\User;
-use Clearbooks\LabsPhpClient\Toggle\Gateway\TogglePolicyGateway;
-use Clearbooks\LabsPhpClient\Toggle\UseCase\IsToggleActive;
-use Clearbooks\LabsPhpClient\Toggle\Gateway\ToggleGateway;
+use Clearbooks\LabsClient\Toggle\Entity\Group;
+use Clearbooks\LabsClient\Toggle\Entity\User;
+use Clearbooks\LabsClient\Toggle\Gateway\TogglePolicyGateway;
+use Clearbooks\LabsClient\Toggle\UseCase\IsToggleActive;
+use Clearbooks\LabsClient\Toggle\Gateway\ToggleGateway;
 
 class ToggleChecker implements IsToggleActive
 {

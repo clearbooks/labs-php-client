@@ -1,5 +1,5 @@
 <?php
-namespace Clearbooks\LabsPhpClient\Toggle\Entity;
+namespace Clearbooks\LabsClient\Toggle\Entity;
 
 interface Group extends Identity
 {

@@ -1,0 +1,17 @@
+{
+  "name": "clearbooks/labs-php-client",
+  "license": "GPL v2",
+  "authors": [
+    {
+      "name": "Clear Books Engineering Team",
+      "email": "developers@clearbooks.co.uk"
+    }
+  ],
+  "autoload": {
+    "psr-4" : {
+      "Clearbooks\\Labs\\": "src"
+    }
+  },
+  "require": {},
+  "require-dev": {}
+}

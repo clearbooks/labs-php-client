@@ -1,0 +1,22 @@
+{
+    "name": "clearbooks/labs-php-client",
+    "description": "Sensible releases",
+    "license": "GPL v2",
+    "authors": [
+        {
+            "name": "Clear Books Engineering Team",
+            "email": "developers@clearbooks.co.uk"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Clearbooks\\LabsPhpClient\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Clearbooks\\LabsPhpClient\\": "test/"}
+    },
+    "require": {},
+    "require-dev": { 
+        "phpunit/phpunit":"4.7.*",
+        "codeclimate/php-test-reporter": "dev-master"
+    }
+}

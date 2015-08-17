@@ -1,7 +1,7 @@
 <?php
-namespace Clearbooks\LabsClient\Toggle;
+namespace Clearbooks\Labs\Client\Toggle;
 
-use Clearbooks\LabsClient\Toggle\UseCase\Response\TogglePolicyResponse;
+use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
 class TogglePolicyResponseStub implements TogglePolicyResponse
 {

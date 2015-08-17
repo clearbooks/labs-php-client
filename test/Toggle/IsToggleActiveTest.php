@@ -1,11 +1,11 @@
 <?php
-namespace Clearbooks\LabsClient\Toggle;
+namespace Clearbooks\Labs\Client\Toggle;
 
-use Clearbooks\LabsClient\Toggle\Entity\GroupStub;
-use Clearbooks\LabsClient\Toggle\Entity\UserStub;
-use Clearbooks\LabsClient\Toggle\Gateway\BaseTogglePolicyGatewayMock;
-use Clearbooks\LabsClient\Toggle\Gateway\ToggleGatewayMock;
-use Clearbooks\LabsClient\Toggle\UseCase\IsToggleActive;
+use Clearbooks\Labs\Client\Toggle\Entity\GroupStub;
+use Clearbooks\Labs\Client\Toggle\Entity\UserStub;
+use Clearbooks\Labs\Client\Toggle\Gateway\BaseTogglePolicyGatewayMock;
+use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGatewayMock;
+use Clearbooks\Labs\Client\Toggle\UseCase\IsToggleActive;
 
 class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
 {

@@ -9,10 +9,10 @@
         }
     ],
     "autoload": {
-        "psr-4": {"Clearbooks\\LabsClient\\": "src/"}
+        "psr-4": {"Clearbooks\\Labs\\Client\\": "src/"}
     },
     "autoload-dev": {
-        "psr-4": {"Clearbooks\\LabsClient\\": "test/"}
+        "psr-4": {"Clearbooks\\Labs\\Client\\": "test/"}
     },
     "require": {},
     "require-dev": { 

@@ -1,5 +1,5 @@
 <?php
-namespace Clearbooks\LabsClient\Toggle\UseCase\Response;
+namespace Clearbooks\Labs\Client\Toggle\UseCase\Response;
 
 interface TogglePolicyResponse
 {

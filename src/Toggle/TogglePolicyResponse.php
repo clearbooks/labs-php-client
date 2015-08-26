@@ -1,9 +1,7 @@
 <?php
 namespace Clearbooks\Labs\Client\Toggle;
 
-use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
-
-class TogglePolicyResponseStub implements TogglePolicyResponse
+class TogglePolicyResponse implements UseCase\Response\TogglePolicyResponse
 {
     /** @var bool */
     private $isSet;
@@ -11,7 +9,7 @@ class TogglePolicyResponseStub implements TogglePolicyResponse
     private $enabled;
 
     /**
-     * TogglePolicyResponseStub constructor.
+     * TogglePolicyResponse constructor.
      * @param bool $isSet
      * @param bool $enabled
      */
@@ -45,4 +43,4 @@ class TogglePolicyResponseStub implements TogglePolicyResponse
         return !$this->isSet;
     }
 }
-//EOF TogglePolicyResponseStub.php
+//EOF TogglePolicyResponse.php

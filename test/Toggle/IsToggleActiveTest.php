@@ -46,14 +46,14 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
 
     public function testWhenToggleVisibleAndGroupDisabled_ThenInactive()
     {
-        $this->setupChecker(true,true);
+        $this->setupChecker(true,true,false,true,true);
         $this->assertFalse($this->checker->isToggleActive(self::VISIBLE_FEATURE_TOGGLE));
         $this->assertTrue($this->groupPolicy->isCalledProperly());
     }
 
     public function testWhenToggleVisibleAndGroupEnabled_ThenActive()
     {
-        $this->setupChecker(true,true,true);
+        $this->setupChecker(true,true,true,true,false);
         $this->assertTrue($this->checker->isToggleActive(self::VISIBLE_FEATURE_TOGGLE));
         $this->assertTrue($this->groupPolicy->isCalledProperly());
     }
@@ -75,24 +75,33 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->userPolicy->isCalledProperly());
     }
 
+    public function testWhenToggleVisibleAndTypeIsGroupAndGroupNotSetAndUserEnabled_ThenInactive()
+    {
+        $this->setupChecker(true, false, false, true, true,ToggleChecker::TOGGLE_TYPE_GROUP);
+        $this->assertFalse($this->checker->isToggleActive(self::VISIBLE_FEATURE_TOGGLE));
+        $this->assertTrue($this->groupPolicy->isCalledProperly());
+        $this->assertFalse($this->userPolicy->isCalledProperly());
+    }
+
     /**
-     * @param string $isToggleVisible
+     * @param bool $isToggleVisible
      * @param bool $isGroupSet
      * @param bool $isGroupEnabled
      * @param bool $isUserSet
      * @param bool $isUserEnabled
+     * @param string $toggleType
      * @return string
      */
-    private function setupChecker($isToggleVisible, $isGroupSet = false, $isGroupEnabled = false, $isUserSet = false, $isUserEnabled = false)
+    private function setupChecker($isToggleVisible, $isGroupSet = false, $isGroupEnabled = false, $isUserSet = false, $isUserEnabled = false, $toggleType = '')
     {
         $toggleId = $isToggleVisible ? self::VISIBLE_FEATURE_TOGGLE : self::INVISIBLE_FEATURE_TOGGLE;
         $groupId = $isGroupSet ? self::NOT_SET_GROUP_POLICY : ($isGroupEnabled ? self::ENABLED_GROUP : self::DISABLED_GROUP);
         $userId = $isUserSet ? self::NOT_SET_USER_POLICY : ($isUserEnabled ? self::ENABLED_USER : self::DISABLED_USER);
         $group = new GroupStub($groupId);
         $user = new UserStub($userId);
-        $this->toggleGateway = new ToggleGatewayMock($toggleId, $isToggleVisible);
-        $this->groupPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponseStub($isGroupSet, $isGroupEnabled));
-        $this->userPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponseStub($isUserSet, $isUserEnabled));
+        $this->toggleGateway = new ToggleGatewayMock($toggleId, $isToggleVisible, $toggleType);
+        $this->groupPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponse($isGroupSet, $isGroupEnabled));
+        $this->userPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponse($isUserSet, $isUserEnabled));
         $this->checker = new ToggleChecker($user, $group, $this->toggleGateway, $this->userPolicy, $this->groupPolicy);
         return $toggleId;
     }

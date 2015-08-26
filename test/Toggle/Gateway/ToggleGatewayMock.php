@@ -8,22 +8,22 @@ class ToggleGatewayMock extends BaseToggleMock implements ToggleGateway
 
     /**
      * ToggleGatewayMock constructor.
-     * @param string $toggleId
+     * @param string $toggleName
      * @param bool $visibility
      */
-    public function __construct($toggleId, $visibility)
+    public function __construct($toggleName, $visibility)
     {
-        parent::__construct($toggleId);
+        parent::__construct($toggleName);
         $this->visibility = $visibility;
     }
 
     /**
-     * @param $toggleId
+     * @param string $toggleName
      * @return bool
      */
-    public function isToggleVisibleForUsers($toggleId)
+    public function isToggleVisibleForUsers($toggleName)
     {
-        $this->testToggle($toggleId);
+        $this->testToggle($toggleName);
         return $this->visibility;
     }
 }

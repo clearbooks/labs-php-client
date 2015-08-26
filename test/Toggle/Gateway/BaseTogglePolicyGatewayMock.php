@@ -15,13 +15,13 @@ class BaseTogglePolicyGatewayMock extends BaseToggleMock implements TogglePolicy
 
     /**
      * GroupTogglePolicyGatewayMock constructor.
-     * @param string $toggleId
+     * @param string $toggleName
      * @param Identity $idHolder
      * @param TogglePolicyResponse $response
      */
-    public function __construct($toggleId, Identity $idHolder,TogglePolicyResponse $response)
+    public function __construct($toggleName, Identity $idHolder,TogglePolicyResponse $response)
     {
-        parent::__construct($toggleId);
+        parent::__construct($toggleName);
         $this->response = $response;
         $this->idHolder = $idHolder;
     }
@@ -35,12 +35,12 @@ class BaseTogglePolicyGatewayMock extends BaseToggleMock implements TogglePolicy
     }
 
     /**
-     * @param string $toggleId
+     * @param string $toggleName
      * @param Identity $idHolder
      * @return TogglePolicyResponse
      */
-    public function getTogglePolicy($toggleId,Identity $idHolder) {
-        $this->testToggle($toggleId);
+    public function getTogglePolicy($toggleName,Identity $idHolder) {
+        $this->testToggle($toggleName);
         $this->idHolderMatched = $idHolder->getId() == $this->idHolder->getId();
         return $this->response;
     }

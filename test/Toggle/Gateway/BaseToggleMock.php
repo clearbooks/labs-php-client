@@ -4,23 +4,23 @@ namespace Clearbooks\Labs\Client\Toggle\Gateway;
 class BaseToggleMock
 {
     /** @var string */
-    private $toggleId;
+    private $toggleName;
     /** @var bool */
     private $calledProperly = false;
 
     /**
-     * @param string $toggleId
+     * @param string $toggleName
      */
-    public function __construct($toggleId)
+    public function __construct($toggleName)
     {
-        $this->toggleId = $toggleId;
+        $this->toggleName = $toggleName;
     }
 
     /**
-     * @param string $toggleId
+     * @param string $toggleName
      */
-    protected function testToggle($toggleId) {
-        $this->calledProperly = $toggleId == $this->toggleId;
+    protected function testToggle($toggleName) {
+        $this->calledProperly = $toggleName == $this->toggleName;
     }
 
     /**

@@ -83,6 +83,14 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->userPolicy->isCalledProperly());
     }
 
+    public function testWhenToggleVisibleAndTypeIsGroupAndGroupDisabledAndUserEnabled_ThenInactive()
+    {
+        $this->setupChecker(true, true, false, true, true,ToggleChecker::TOGGLE_TYPE_GROUP);
+        $this->assertFalse($this->checker->isToggleActive(self::VISIBLE_FEATURE_TOGGLE));
+        $this->assertTrue($this->groupPolicy->isCalledProperly());
+        $this->assertFalse($this->userPolicy->isCalledProperly());
+    }
+
     /**
      * @param bool $isToggleVisible
      * @param bool $isGroupSet
@@ -92,7 +100,7 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
      * @param string $toggleType
      * @return string
      */
-    private function setupChecker($isToggleVisible, $isGroupSet = false, $isGroupEnabled = false, $isUserSet = false, $isUserEnabled = false, $toggleType = '')
+    private function setupChecker($isToggleVisible, $isGroupSet = false, $isGroupEnabled = false, $isUserSet = false, $isUserEnabled = false, $toggleType = 'simple')
     {
         $toggleId = $isToggleVisible ? self::VISIBLE_FEATURE_TOGGLE : self::INVISIBLE_FEATURE_TOGGLE;
         $groupId = $isGroupSet ? self::NOT_SET_GROUP_POLICY : ($isGroupEnabled ? self::ENABLED_GROUP : self::DISABLED_GROUP);

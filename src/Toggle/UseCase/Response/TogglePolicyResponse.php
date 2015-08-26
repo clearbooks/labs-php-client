@@ -6,10 +6,6 @@ interface TogglePolicyResponse
     /**
      * @return bool
      */
-    public function isDisabled();
-    /**
-     * @return bool
-     */
     public function isEnabled();
     /**
      * @return bool

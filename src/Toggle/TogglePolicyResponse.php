@@ -22,14 +22,6 @@ class TogglePolicyResponse implements UseCase\Response\TogglePolicyResponse
     /**
      * @return bool
      */
-    public function isDisabled()
-    {
-        return $this->isSet && !$this->enabled;
-    }
-
-    /**
-     * @return bool
-     */
     public function isEnabled()
     {
         return $this->isSet && $this->enabled;

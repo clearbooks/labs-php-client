@@ -7,10 +7,10 @@ use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 interface TogglePolicyGateway
 {
     /**
-     * @param string $toggleId
+     * @param string $toggleName
      * @param Identity $idHolder
      * @return TogglePolicyResponse
      */
-    public function getTogglePolicy($toggleId, Identity $idHolder);
+    public function getTogglePolicy($toggleName, Identity $idHolder);
 }
 //EOF TogglePolicyGateway.php

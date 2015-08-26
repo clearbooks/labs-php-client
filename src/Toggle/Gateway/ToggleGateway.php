@@ -4,9 +4,9 @@ namespace Clearbooks\Labs\Client\Toggle\Gateway;
 interface ToggleGateway
 {
     /**
-     * @param $toggleId
+     * @param string $toggleName
      * @return bool
      */
-    public function isToggleVisibleForUsers($toggleId);
+    public function isToggleVisibleForUsers($toggleName);
 }
 //EOF ToggleGateway.php

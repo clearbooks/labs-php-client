@@ -53,7 +53,7 @@ class ToggleChecker implements IsToggleActive
         if ( $this->isGroupToggleInUnsetGroup($groupPolicyResponse,$this->toggleGateway->isGroupToggle($toggleName)) ) {
             return false;
         }
-        return $this->isGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse);
+        return $this->ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse);
     }
 
     /**
@@ -71,7 +71,7 @@ class ToggleChecker implements IsToggleActive
      * @param TogglePolicyResponse $groupPolicyResponse
      * @return bool
      */
-    private function isGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse)
+    private function ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse)
     {
         return $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled();
     }

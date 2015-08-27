@@ -6,6 +6,7 @@ use Clearbooks\Labs\Client\Toggle\Entity\User;
 use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\UseCase\IsToggleActive;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGateway;
+use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
 class ToggleChecker implements IsToggleActive
 {
@@ -45,24 +46,14 @@ class ToggleChecker implements IsToggleActive
         if ( !$this->toggleGateway->isToggleVisibleForUsers($toggleName) ) {
             return false;
         }
-
         $groupPolicyResponse = $this->groupPolicy->getTogglePolicy($toggleName, $this->group);
         if ( $groupPolicyResponse->isEnabled() ) {
             return true;
         }
-
         if ( $this->isGroupToggleInUnsetGroup($groupPolicyResponse,$this->toggleGateway->isGroupToggle($toggleName)) ) {
             return false;
         }
-
-        if ( !$groupPolicyResponse->isNotSet() ) {
-            return false;
-        }
-
-        if ( $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled() ) {
-            return true;
-        }
-        return false;
+        return $this->isGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse);
     }
 
     /**
@@ -73,6 +64,16 @@ class ToggleChecker implements IsToggleActive
     private function isGroupToggleInUnsetGroup(UseCase\Response\TogglePolicyResponse $groupPolicyResponse, $isGroupToggle)
     {
         return $isGroupToggle && $groupPolicyResponse->isNotSet() ;
+    }
+
+    /**
+     * @param $toggleName
+     * @param TogglePolicyResponse $groupPolicyResponse
+     * @return bool
+     */
+    private function isGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse)
+    {
+        return $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled();
     }
 }
 //EOF ToggleChecker.php

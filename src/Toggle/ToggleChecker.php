@@ -56,14 +56,14 @@ class ToggleChecker implements IsToggleActive
     /**
      * @param UseCase\Response\TogglePolicyResponse $groupPolicyResponse
      * @param string $type
-     * @return TogglePolicyResponse
+     * @return UseCase\Response\TogglePolicyResponse
      */
     private function transformByType(UseCase\Response\TogglePolicyResponse $groupPolicyResponse, $type)
     {
         switch ($type) {
             case self::TOGGLE_TYPE_GROUP:
                 if ( $groupPolicyResponse->isNotSet() ) {
-                    return new TogglePolicyResponse(true,false);
+                    return new TogglePolicyDisabledResponse;
                 }
             break;
         }

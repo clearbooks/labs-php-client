@@ -108,8 +108,8 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
         $group = new GroupStub($groupId);
         $user = new UserStub($userId);
         $this->toggleGateway = new ToggleGatewayMock($toggleId, $isToggleVisible, $toggleType);
-        $this->groupPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponse($isGroupSet, $isGroupEnabled));
-        $this->userPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponse($isUserSet, $isUserEnabled));
+        $this->groupPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponseStub($isGroupSet, $isGroupEnabled));
+        $this->userPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponseStub($isUserSet, $isUserEnabled));
         $this->checker = new ToggleChecker($user, $group, $this->toggleGateway, $this->userPolicy, $this->groupPolicy);
         return $toggleId;
     }

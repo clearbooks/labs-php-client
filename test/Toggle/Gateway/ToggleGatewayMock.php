@@ -5,20 +5,20 @@ class ToggleGatewayMock extends BaseToggleMock implements ToggleGateway
 {
     /** @var bool */
     private $visibility;
-    /** @var string */
-    private $type;
+    /** @var bool */
+    private $isGroupToggle;
 
     /**
      * ToggleGatewayMock constructor.
      * @param string $toggleName
      * @param bool $visibility
-     * @param string $type
+     * @param bool $isGroupToggle
      */
-    public function __construct($toggleName, $visibility, $type)
+    public function __construct($toggleName, $visibility, $isGroupToggle)
     {
         parent::__construct($toggleName);
         $this->visibility = $visibility;
-        $this->type = $type;
+        $this->isGroupToggle = $isGroupToggle;
     }
 
     /**
@@ -33,11 +33,11 @@ class ToggleGatewayMock extends BaseToggleMock implements ToggleGateway
 
     /**
      * @param string $toggleName
-     * @return string
+     * @return bool
      */
-    public function getType($toggleName)
+    public function isGroupToggle($toggleName)
     {
-        return $this->type;
+        return $this->isGroupToggle;
     }
 }
 //EOF ToggleGatewayMock.php

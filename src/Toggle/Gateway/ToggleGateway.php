@@ -11,8 +11,8 @@ interface ToggleGateway
 
     /**
      * @param string $toggleName
-     * @return string
+     * @return bool
      */
-    public function getType($toggleName);
+    public function isGroupToggle($toggleName);
 }
 //EOF ToggleGateway.php

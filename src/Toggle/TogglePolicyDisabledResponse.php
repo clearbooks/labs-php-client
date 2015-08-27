@@ -19,4 +19,4 @@ class TogglePolicyDisabledResponse implements UseCase\Response\TogglePolicyRespo
         return false;
     }
 }
-//EOF TogglePolicyResponse.php
+//EOF TogglePolicyDisabledResponse.php

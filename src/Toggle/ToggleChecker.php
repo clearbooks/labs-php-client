@@ -9,7 +9,6 @@ use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGateway;
 
 class ToggleChecker implements IsToggleActive
 {
-    const TOGGLE_TYPE_GROUP = 'group';
     /** @var ToggleGateway */
     private $toggleGateway;
     /** @var TogglePolicyGateway */
@@ -46,28 +45,20 @@ class ToggleChecker implements IsToggleActive
         if ( !$this->toggleGateway->isToggleVisibleForUsers($toggleName) ) {
             return false;
         }
-        $groupPolicyResponse = $this->transformByType(
-            $this->groupPolicy->getTogglePolicy($toggleName, $this->group),
-            $this->toggleGateway->getType($toggleName));
+        $groupPolicyResponse = $this->groupPolicy->getTogglePolicy($toggleName, $this->group);
         return $groupPolicyResponse->isEnabled() ||
-        ( $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled());
+        ( !$this->isGroupToggleInUnsetGroup($groupPolicyResponse,$this->toggleGateway->isGroupToggle($toggleName)) &&
+        ( $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled()) );
     }
 
     /**
      * @param UseCase\Response\TogglePolicyResponse $groupPolicyResponse
-     * @param string $type
-     * @return UseCase\Response\TogglePolicyResponse
+     * @param bool $isGroupToggle
+     * @return bool
      */
-    private function transformByType(UseCase\Response\TogglePolicyResponse $groupPolicyResponse, $type)
+    private function isGroupToggleInUnsetGroup(UseCase\Response\TogglePolicyResponse $groupPolicyResponse, $isGroupToggle)
     {
-        switch ($type) {
-            case self::TOGGLE_TYPE_GROUP:
-                if ( $groupPolicyResponse->isNotSet() ) {
-                    return new TogglePolicyDisabledResponse;
-                }
-            break;
-        }
-        return $groupPolicyResponse;
+        return $isGroupToggle && $groupPolicyResponse->isNotSet() ;
     }
 }
 //EOF ToggleChecker.php

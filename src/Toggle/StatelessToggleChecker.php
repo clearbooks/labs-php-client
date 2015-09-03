@@ -3,12 +3,13 @@ namespace Clearbooks\Labs\Client\Toggle;
 
 use Clearbooks\Labs\Client\Toggle\Entity\Group;
 use Clearbooks\Labs\Client\Toggle\Entity\User;
-use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
-use Clearbooks\Labs\Client\Toggle\UseCase\IsToggleActive;
+use Clearbooks\Labs\Client\Toggle\Gateway\GroupTogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGateway;
+use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
+use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
-class ToggleChecker implements IsToggleActive
+class StatelessToggleChecker implements UseCase\StatelessToggleCheckable
 {
     /** @var ToggleGateway */
     private $toggleGateway;
@@ -16,44 +17,38 @@ class ToggleChecker implements IsToggleActive
     private $groupPolicy;
     /** @var TogglePolicyGateway */
     private $userPolicy;
-    /** @var Group */
-    private $group;
-    /** @var User */
-    private $user;
 
     /**
-     * @param User $user
-     * @param Group $group
      * @param ToggleGateway $toggleGateway
-     * @param TogglePolicyGateway $userPolicy
-     * @param TogglePolicyGateway $groupPolicy
+     * @param UserTogglePolicyGateway $userPolicy
+     * @param GroupTogglePolicyGateway $groupPolicy
      */
-    public function __construct(User $user, Group $group, ToggleGateway $toggleGateway ,TogglePolicyGateway $userPolicy ,TogglePolicyGateway $groupPolicy)
+    public function __construct(ToggleGateway $toggleGateway ,UserTogglePolicyGateway $userPolicy ,GroupTogglePolicyGateway $groupPolicy)
     {
         $this->toggleGateway = $toggleGateway;
         $this->groupPolicy = $groupPolicy;
-        $this->group = $group;
-        $this->user = $user;
         $this->userPolicy = $userPolicy;
     }
 
     /**
      * @param string $toggleName
+     * @param User $user
+     * @param Group $group
      * @return bool is it active
      */
-    public function isToggleActive( $toggleName )
+    public function isToggleActive( $toggleName, User $user, Group $group )
     {
         if ( !$this->toggleGateway->isToggleVisibleForUsers($toggleName) ) {
             return false;
         }
-        $groupPolicyResponse = $this->groupPolicy->getTogglePolicy($toggleName, $this->group);
+        $groupPolicyResponse = $this->groupPolicy->getTogglePolicy($toggleName, $group);
         if ( $groupPolicyResponse->isEnabled() ) {
             return true;
         }
         if ( $this->isGroupToggleInUnsetGroup($groupPolicyResponse,$this->toggleGateway->isGroupToggle($toggleName)) ) {
             return false;
         }
-        return $this->ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse);
+        return $this->ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse, $user);
     }
 
     /**
@@ -69,11 +64,11 @@ class ToggleChecker implements IsToggleActive
     /**
      * @param $toggleName
      * @param TogglePolicyResponse $groupPolicyResponse
+     * @param User $user
      * @return bool
      */
-    private function ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse)
+    private function ifGroupUnsetUseUserPolicy($toggleName, $groupPolicyResponse, User $user)
     {
-        return $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $this->user)->isEnabled();
+        return $groupPolicyResponse->isNotSet() && $this->userPolicy->getTogglePolicy($toggleName, $user)->isEnabled();
     }
 }
-//EOF ToggleChecker.php

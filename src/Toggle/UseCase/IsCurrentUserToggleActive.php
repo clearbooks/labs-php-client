@@ -1,7 +1,7 @@
 <?php
 namespace Clearbooks\Labs\Client\Toggle\UseCase;
 
-interface IsToggleActive
+interface IsCurrentUserToggleActive
 {
     /**
      * @param string $toggleName
@@ -9,4 +9,4 @@ interface IsToggleActive
      */
     public function isToggleActive( $toggleName );
 }
-//EOF IsToggleActive.php
+//EOF IsCurrentUserToggleActive.php

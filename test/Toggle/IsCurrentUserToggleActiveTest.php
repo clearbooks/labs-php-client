@@ -4,10 +4,12 @@ namespace Clearbooks\Labs\Client\Toggle;
 use Clearbooks\Labs\Client\Toggle\Entity\GroupStub;
 use Clearbooks\Labs\Client\Toggle\Entity\UserStub;
 use Clearbooks\Labs\Client\Toggle\Gateway\BaseTogglePolicyGatewayMock;
+use Clearbooks\Labs\Client\Toggle\Gateway\GroupTogglePolicyGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGatewayMock;
-use Clearbooks\Labs\Client\Toggle\UseCase\IsToggleActive;
+use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGatewayMock;
+use Clearbooks\Labs\Client\Toggle\UseCase\IsCurrentUserToggleActive;
 
-class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
+class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
 {
 
     const INVISIBLE_FEATURE_TOGGLE = 'Invisible Feature toggle';
@@ -25,7 +27,7 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
     private $userPolicy;
     /** @var ToggleGatewayMock */
     private $toggleGateway;
-    /** @var IsToggleActive */
+    /** @var IsCurrentUserToggleActive */
     private $checker;
 
     public function testWhenToggleNotVisible_ThenInactive()
@@ -117,10 +119,11 @@ class IsToggleActiveTest extends \PHPUnit_Framework_TestCase
         $group = new GroupStub($groupId);
         $user = new UserStub($userId);
         $this->toggleGateway = new ToggleGatewayMock($toggleId, $isToggleVisible, $isGroupType);
-        $this->groupPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponseStub($isGroupSet, $isGroupEnabled));
-        $this->userPolicy = new BaseTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponseStub($isUserSet, $isUserEnabled));
-        $this->checker = new ToggleChecker($user, $group, $this->toggleGateway, $this->userPolicy, $this->groupPolicy);
+        $this->groupPolicy = new GroupTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponseStub($isGroupSet, $isGroupEnabled));
+        $this->userPolicy = new UserTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponseStub($isUserSet, $isUserEnabled));
+        $ToggleChecker = new StatelessToggleChecker($this->toggleGateway, $this->userPolicy, $this->groupPolicy);
+        $this->checker = new CurrentUserToggleChecker($user, $group, $ToggleChecker);
         return $toggleId;
     }
 }
-//EOF IsToggleActiveTest.php
+//EOF IsCurrentUserToggleActiveTest.php

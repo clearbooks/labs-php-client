@@ -9,7 +9,7 @@ use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
-class StatelessToggleChecker implements UseCase\StatelessToggleCheckable
+class StatelessToggleChecker implements UseCase\ToggleChecker
 {
     /** @var ToggleGateway */
     private $toggleGateway;

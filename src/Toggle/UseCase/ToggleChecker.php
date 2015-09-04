@@ -4,7 +4,7 @@ namespace Clearbooks\Labs\Client\Toggle\UseCase;
 use Clearbooks\Labs\Client\Toggle\Entity\Group;
 use Clearbooks\Labs\Client\Toggle\Entity\User;
 
-interface StatelessToggleCheckable
+interface ToggleChecker
 {
     /**
      * @param string $toggleName

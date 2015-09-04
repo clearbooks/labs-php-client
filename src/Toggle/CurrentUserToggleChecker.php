@@ -4,7 +4,7 @@ namespace Clearbooks\Labs\Client\Toggle;
 use Clearbooks\Labs\Client\Toggle\Entity\Group;
 use Clearbooks\Labs\Client\Toggle\Entity\User;
 use Clearbooks\Labs\Client\Toggle\UseCase\IsCurrentUserToggleActive;
-use Clearbooks\Labs\Client\Toggle\UseCase\StatelessToggleCheckable;
+use Clearbooks\Labs\Client\Toggle\UseCase\ToggleChecker;
 
 class CurrentUserToggleChecker implements IsCurrentUserToggleActive
 {
@@ -18,9 +18,9 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     /**
      * @param User $user
      * @param Group $group
-     * @param StatelessToggleCheckable $toggleChecker
+     * @param ToggleChecker $toggleChecker
      */
-    public function __construct(User $user, Group $group, StatelessToggleCheckable $toggleChecker)
+    public function __construct(User $user, Group $group, ToggleChecker $toggleChecker)
     {
         $this->group = $group;
         $this->user = $user;

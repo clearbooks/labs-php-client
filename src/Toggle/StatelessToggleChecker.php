@@ -41,6 +41,11 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
         if ( !$this->toggleGateway->isToggleVisibleForUsers($toggleName) ) {
             return false;
         }
+
+        if ( $this->toggleGateway->isReleaseDateOfToggleReleaseTodayOrInThePast( $toggleName ) ) {
+            return true;
+        }
+
         $groupPolicyResponse = $this->groupPolicy->getTogglePolicy($toggleName, $group);
         if ( $groupPolicyResponse->isEnabled() ) {
             return true;

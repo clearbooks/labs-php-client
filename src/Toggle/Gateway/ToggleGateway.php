@@ -14,5 +14,11 @@ interface ToggleGateway
      * @return bool
      */
     public function isGroupToggle($toggleName);
+
+    /**
+     * @param string $toggleName
+     * @return bool
+     */
+    public function isReleaseDateOfToggleReleaseTodayOrInThePast( $toggleName );
 }
 //EOF ToggleGateway.php

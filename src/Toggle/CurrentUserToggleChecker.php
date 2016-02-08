@@ -12,7 +12,7 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     private $group;
     /** @var User */
     private $user;
-    /** @var StatelessToggleChecker */
+    /** @var ToggleChecker */
     private $toggleChecker;
 
     /**

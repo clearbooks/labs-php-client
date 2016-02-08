@@ -2,7 +2,9 @@
 namespace Clearbooks\Labs\Client\Toggle;
 
 use Clearbooks\Labs\Client\Toggle\Entity\GroupStub;
+use Clearbooks\Labs\Client\Toggle\Entity\Identity;
 use Clearbooks\Labs\Client\Toggle\Entity\UserStub;
+use Clearbooks\Labs\Client\Toggle\Gateway\AutoSubscribersGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\BaseTogglePolicyGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\GroupTogglePolicyGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGatewayMock;
@@ -23,12 +25,25 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
 
     /** @var BaseTogglePolicyGatewayMock */
     private $groupPolicy;
+
     /** @var BaseTogglePolicyGatewayMock */
     private $userPolicy;
+
     /** @var ToggleGatewayMock */
     private $toggleGateway;
+
+    /**
+     * @var AutoSubscribersGatewayMock
+     */
+    private $autoSubscribersGatewayMock;
+
     /** @var IsCurrentUserToggleActive */
     private $checker;
+
+    /**
+     * @var Identity
+     */
+    private $currentUser;
 
     public function testWhenToggleNotVisible_ThenInactive()
     {
@@ -121,6 +136,65 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @test
+     */
+    public function GivenToggleInvisibleAndNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenInactive()
+    {
+        $this->setupChecker( false, false, false, false, false, false, false );
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->assertFalse( $this->checker->isToggleActive( self::INVISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
+     * @test
+     */
+    public function GivenGroupToggleNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenInactive()
+    {
+        $this->setupChecker( true, false, false, false, false, true, false );
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->assertFalse( $this->checker->isToggleActive( self::VISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
+     * @test
+     */
+    public function GivenToggleDisabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenInactive()
+    {
+        $this->setupChecker( true, false, false, true, false, false, false );
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->assertFalse( $this->checker->isToggleActive( self::VISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
+     * @test
+     */
+    public function GivenToggleEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsNotAutoSubscribed_ThenActive()
+    {
+        $this->setupChecker( true, false, false, true, true, false, false );
+        $this->assertTrue( $this->checker->isToggleActive( self::VISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
+     * @test
+     */
+    public function GivenToggleNotSetByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenActive()
+    {
+        $this->setupChecker( true, false, false, false, false, false, false );
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->assertTrue( $this->checker->isToggleActive( self::VISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
+     * @test
+     */
+    public function GivenToggleEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenActive()
+    {
+        $this->setupChecker( true, false, false, true, true, false, false );
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->assertTrue( $this->checker->isToggleActive( self::VISIBLE_FEATURE_TOGGLE ) );
+    }
+
+    /**
      * @param bool $isToggleVisible
      * @param bool $isGroupSet
      * @param bool $isGroupEnabled
@@ -142,8 +216,10 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
         $this->toggleGateway = new ToggleGatewayMock( $toggleId, $isToggleVisible, $isGroupType, $isReleaseDateTodayOrInThePast );
         $this->groupPolicy = new GroupTogglePolicyGatewayMock($isToggleVisible, $group, new TogglePolicyResponseStub($isGroupSet, $isGroupEnabled));
         $this->userPolicy = new UserTogglePolicyGatewayMock($isToggleVisible, $user, new TogglePolicyResponseStub($isUserSet, $isUserEnabled));
-        $ToggleChecker = new StatelessToggleChecker($this->toggleGateway, $this->userPolicy, $this->groupPolicy);
+        $this->autoSubscribersGatewayMock = new AutoSubscribersGatewayMock();
+        $ToggleChecker = new StatelessToggleChecker($this->toggleGateway, $this->userPolicy, $this->groupPolicy, $this->autoSubscribersGatewayMock);
         $this->checker = new CurrentUserToggleChecker($user, $group, $ToggleChecker);
+        $this->currentUser = $user;
         return $toggleId;
     }
 }

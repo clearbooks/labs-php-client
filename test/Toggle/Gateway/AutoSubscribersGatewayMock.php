@@ -5,6 +5,9 @@ use Clearbooks\Labs\Client\Toggle\Entity\Identity;
 
 class AutoSubscribersGatewayMock implements AutoSubscribersGateway
 {
+    /**
+     * @var array
+     */
     private $subscribers = [ ];
 
     /**

@@ -2,47 +2,64 @@
 namespace Clearbooks\Labs\Client\Toggle\Gateway;
 
 use Clearbooks\Labs\Client\Toggle\Entity\Identity;
+use Clearbooks\Labs\Client\Toggle\TogglePolicyResponseStub;
 use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
-class BaseTogglePolicyGatewayMock extends BaseToggleMock implements TogglePolicyGateway
+class BaseTogglePolicyGatewayMock implements TogglePolicyGateway
 {
-    /** @var bool */
-    private $idHolderMatched;
-    /** @var TogglePolicyResponse */
-    private $response;
-    /** @var Identity */
-    private $idHolder;
-
     /**
-     * GroupTogglePolicyGatewayMock constructor.
-     * @param string $toggleName
-     * @param Identity $idHolder
-     * @param TogglePolicyResponse $response
+     * @var array
      */
-    public function __construct($toggleName, Identity $idHolder,TogglePolicyResponse $response)
-    {
-        parent::__construct($toggleName);
-        $this->response = $response;
-        $this->idHolder = $idHolder;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isCalledProperly()
-    {
-        return parent::isCalledProperly() && $this->idHolderMatched;
-    }
+    private $responses = [ ];
 
     /**
      * @param string $toggleName
      * @param Identity $idHolder
      * @return TogglePolicyResponse
      */
-    public function getTogglePolicy($toggleName,Identity $idHolder) {
-        $this->testToggle($toggleName);
-        $this->idHolderMatched = $idHolder->getId() == $this->idHolder->getId();
-        return $this->response;
+    public function getTogglePolicy( $toggleName, Identity $idHolder )
+    {
+        if ( !isset( $this->responses[$toggleName] ) || !isset( $this->responses[$toggleName][$idHolder->getId()] ) ) {
+            return new TogglePolicyResponseStub( false, false );
+        }
+
+        return new TogglePolicyResponseStub( true, $this->responses[$toggleName][$idHolder->getId()] );
+    }
+
+    /**
+     * @param string $toggleName
+     * @param Identity $idHolder
+     * @param bool|null $togglePolicyStatus
+     */
+    public function setTogglePolicy( $toggleName, Identity $idHolder, $togglePolicyStatus )
+    {
+        if ( !isset( $this->responses[$toggleName] ) ) {
+            $this->responses[$toggleName] = [ ];
+        }
+
+        if ( $togglePolicyStatus === null ) {
+            unset( $this->responses[$toggleName][$idHolder->getId()] );
+            return;
+        }
+
+        $this->responses[$toggleName][$idHolder->getId()] = $togglePolicyStatus;
+    }
+
+    /**
+     * @param string $toggleName
+     * @param Identity $idHolder
+     */
+    public function setTogglePolicyDisabled( $toggleName, Identity $idHolder )
+    {
+        $this->setTogglePolicy( $toggleName, $idHolder, false );
+    }
+
+    /**
+     * @param string $toggleName
+     * @param Identity $idHolder
+     */
+    public function setTogglePolicyEnabled( $toggleName, Identity $idHolder )
+    {
+        $this->setTogglePolicy( $toggleName, $idHolder, true );
     }
 }
-//EOF BaseTogglePolicyGatewayMock.php

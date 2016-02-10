@@ -1,49 +1,39 @@
 <?php
 namespace Clearbooks\Labs\Client\Toggle\Gateway;
 
-class ToggleGatewayMock extends BaseToggleMock implements ToggleGateway
+class ToggleGatewayMock implements ToggleGateway
 {
-    /** @var bool */
-    private $visibility;
-
-    /** @var bool */
-    private $isGroupToggle;
-
-    /** @var bool */
-    private $isReleaseDateTodayOrInThePast;
+    /**
+     * @var bool[]
+     */
+    private $visibility = [ ];
 
     /**
-     * ToggleGatewayMock constructor.
-     * @param string $toggleName
-     * @param bool $visibility
-     * @param bool $isGroupToggle
-     * @param bool $isReleaseDateTodayOrInThePast
+     * @var bool[]
      */
-    public function __construct( $toggleName, $visibility, $isGroupToggle, $isReleaseDateTodayOrInThePast )
+    private $isGroupToggle = [ ];
+
+    /**
+     * @var bool[]
+     */
+    private $isReleaseDateTodayOrInThePast = [ ];
+
+    /**
+     * @param string $toggleName
+     * @return bool
+     */
+    public function isToggleVisibleForUsers( $toggleName )
     {
-        parent::__construct($toggleName);
-        $this->visibility = $visibility;
-        $this->isGroupToggle = $isGroupToggle;
-        $this->isReleaseDateTodayOrInThePast = $isReleaseDateTodayOrInThePast;
+        return isset( $this->visibility[$toggleName] ) && $this->visibility[$toggleName];
     }
 
     /**
      * @param string $toggleName
      * @return bool
      */
-    public function isToggleVisibleForUsers($toggleName)
+    public function isGroupToggle( $toggleName )
     {
-        $this->testToggle($toggleName);
-        return $this->visibility;
-    }
-
-    /**
-     * @param string $toggleName
-     * @return bool
-     */
-    public function isGroupToggle($toggleName)
-    {
-        return $this->isGroupToggle;
+        return isset( $this->isGroupToggle[$toggleName] ) && $this->isGroupToggle[$toggleName];
     }
 
     /**
@@ -52,7 +42,33 @@ class ToggleGatewayMock extends BaseToggleMock implements ToggleGateway
      */
     public function isReleaseDateOfToggleReleaseTodayOrInThePast( $toggleName )
     {
-        return $this->isReleaseDateTodayOrInThePast;
+        return isset( $this->isReleaseDateTodayOrInThePast[$toggleName] ) && $this->isReleaseDateTodayOrInThePast[$toggleName];
+    }
+
+    /**
+     * @param string $toggleName
+     * @param boolean $visibility
+     */
+    public function setVisibility( $toggleName, $visibility )
+    {
+        $this->visibility[$toggleName] = $visibility;
+    }
+
+    /**
+     * @param string $toggleName
+     * @param boolean $isGroupToggle
+     */
+    public function setIsGroupToggle( $toggleName, $isGroupToggle )
+    {
+        $this->isGroupToggle[$toggleName] = $isGroupToggle;
+    }
+
+    /**
+     * @param string $toggleName
+     * @param boolean $isReleaseDateTodayOrInThePast
+     */
+    public function setIsReleaseDateTodayOrInThePast( $toggleName, $isReleaseDateTodayOrInThePast )
+    {
+        $this->isReleaseDateTodayOrInThePast[$toggleName] = $isReleaseDateTodayOrInThePast;
     }
 }
-//EOF ToggleGatewayMock.php

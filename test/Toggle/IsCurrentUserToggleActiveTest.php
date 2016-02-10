@@ -193,8 +193,9 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenGroupToggleNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
+    public function GivenGroupToggleVisibleButNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
     {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
         $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
         $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
         $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
@@ -203,8 +204,9 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenToggleDisabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
+    public function GivenToggleVisibleAndDisabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
     {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
         $this->userPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentUser );
         $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
         $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
@@ -213,8 +215,9 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenToggleEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsNotAutoSubscribed_ThenExpectActive()
+    public function GivenToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsNotAutoSubscribed_ThenExpectActive()
     {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
         $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
         $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
     }
@@ -222,8 +225,9 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenToggleNotSetByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
+    public function GivenToggleVisibleAndNotSetByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
     {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
         $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
         $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
     }
@@ -231,8 +235,9 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenToggleEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
+    public function GivenToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
     {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
         $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
         $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
         $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );

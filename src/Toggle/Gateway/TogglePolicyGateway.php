@@ -11,6 +11,6 @@ interface TogglePolicyGateway
      * @param Identity $idHolder
      * @return TogglePolicyResponse
      */
-    public function getTogglePolicy($toggleName, Identity $idHolder);
+    public function getTogglePolicy( $toggleName, Identity $idHolder );
 }
 //EOF TogglePolicyGateway.php

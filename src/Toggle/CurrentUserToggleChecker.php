@@ -8,22 +8,26 @@ use Clearbooks\Labs\Client\Toggle\UseCase\ToggleChecker;
 
 class CurrentUserToggleChecker implements IsCurrentUserToggleActive
 {
-    /** @var Group */
+    /**
+     * @var Group
+     */
     private $group;
-    /** @var User */
+
+    /**
+     * @var User
+     */
     private $user;
-    /** @var ToggleChecker */
+
+    /**
+     * @var ToggleChecker
+     */
     private $toggleChecker;
 
     /**
-     * @param User $user
-     * @param Group $group
      * @param ToggleChecker $toggleChecker
      */
-    public function __construct(User $user, Group $group, ToggleChecker $toggleChecker)
+    public function __construct( ToggleChecker $toggleChecker )
     {
-        $this->group = $group;
-        $this->user = $user;
         $this->toggleChecker = $toggleChecker;
     }
 
@@ -33,7 +37,22 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
      */
     public function isToggleActive( $toggleName )
     {
-        return $this->toggleChecker->isToggleActive($toggleName, $this->user, $this->group);
+        return $this->toggleChecker->isToggleActive( $toggleName, $this->user, $this->group );
+    }
+
+    /**
+     * @param Group $group
+     */
+    public function setGroup( $group )
+    {
+        $this->group = $group;
+    }
+
+    /**
+     * @param User $user
+     */
+    public function setUser( $user )
+    {
+        $this->user = $user;
     }
 }
-//EOF CurrentUserToggleChecker.php

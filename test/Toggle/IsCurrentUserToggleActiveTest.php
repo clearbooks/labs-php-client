@@ -65,9 +65,11 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
                 $this->groupPolicyGatewayMock, $this->autoSubscribersGatewayMock
         );
 
-        $this->currentUserToggleChecker = new CurrentUserToggleChecker( $statelessToggleChecker );
-        $this->currentUserToggleChecker->setUser( $this->currentUser );
-        $this->currentUserToggleChecker->setGroup( $this->currentGroup );
+        $this->currentUserToggleChecker = new CurrentUserToggleChecker(
+                $this->currentUser,
+                $this->currentGroup,
+                $statelessToggleChecker
+        );
     }
 
     /**

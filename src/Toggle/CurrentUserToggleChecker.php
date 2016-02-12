@@ -24,10 +24,14 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     private $toggleChecker;
 
     /**
+     * @param User $user
+     * @param Group $group
      * @param ToggleChecker $toggleChecker
      */
-    public function __construct( ToggleChecker $toggleChecker )
+    public function __construct( User $user, Group $group, ToggleChecker $toggleChecker )
     {
+        $this->user = $user;
+        $this->group = $group;
         $this->toggleChecker = $toggleChecker;
     }
 
@@ -43,7 +47,7 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     /**
      * @param Group $group
      */
-    public function setGroup( $group )
+    public function setGroup( Group $group )
     {
         $this->group = $group;
     }
@@ -51,7 +55,7 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     /**
      * @param User $user
      */
-    public function setUser( $user )
+    public function setUser( User $user )
     {
         $this->user = $user;
     }

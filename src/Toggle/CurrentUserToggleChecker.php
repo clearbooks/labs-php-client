@@ -43,20 +43,4 @@ class CurrentUserToggleChecker implements IsCurrentUserToggleActive
     {
         return $this->toggleChecker->isToggleActive( $toggleName, $this->user, $this->group );
     }
-
-    /**
-     * @param Group $group
-     */
-    public function setGroup( Group $group )
-    {
-        $this->group = $group;
-    }
-
-    /**
-     * @param User $user
-     */
-    public function setUser( User $user )
-    {
-        $this->user = $user;
-    }
 }

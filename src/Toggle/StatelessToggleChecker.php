@@ -121,11 +121,8 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
 
         $isGroupToggleWithUnsetGroupPolicy = $isGroupToggle && $groupPolicyResponse->isNotSet();
         $isGroupPolicyDisabled = !$groupPolicyResponse->isNotSet() && !$groupPolicyResponse->isEnabled();
-        if ( $isGroupToggleWithUnsetGroupPolicy || $isGroupPolicyDisabled ) {
-            return false;
-        }
 
-        return null;
+        return ( $isGroupToggleWithUnsetGroupPolicy || $isGroupPolicyDisabled ) ? false : null;
     }
 
     /**
@@ -181,10 +178,6 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return $notLockedSegmentPolicyResult;
         }
 
-        if ( $this->autoSubscribersGateway->isUserAutoSubscriber( $user ) ) {
-            return true;
-        }
-
-        return false;
+        return $this->autoSubscribersGateway->isUserAutoSubscriber( $user );
     }
 }

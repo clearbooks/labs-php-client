@@ -17,6 +17,9 @@ class UserStub implements User
         $this->userId = $userId;
     }
 
+    /**
+     * @return string
+     */
     public function getId()
     {
         return $this->userId;

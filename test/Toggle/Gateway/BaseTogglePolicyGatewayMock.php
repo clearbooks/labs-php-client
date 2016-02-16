@@ -20,10 +20,10 @@ class BaseTogglePolicyGatewayMock implements TogglePolicyGateway
     public function getTogglePolicy( $toggleName, Identity $idHolder )
     {
         if ( !isset( $this->responses[$toggleName] ) || !isset( $this->responses[$toggleName][$idHolder->getId()] ) ) {
-            return new TogglePolicyResponseStub( false, false );
+            return new TogglePolicyResponseStub();
         }
 
-        return new TogglePolicyResponseStub( true, $this->responses[$toggleName][$idHolder->getId()] );
+        return new TogglePolicyResponseStub( $this->responses[$toggleName][$idHolder->getId()] );
     }
 
     /**

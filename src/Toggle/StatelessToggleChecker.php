@@ -10,6 +10,7 @@ use Clearbooks\Labs\Client\Toggle\Gateway\SegmentTogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGateway;
+use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
 class StatelessToggleChecker implements UseCase\ToggleChecker
 {
@@ -119,9 +120,20 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return true;
         }
 
-        $isGroupToggleWithUnsetGroupPolicy = $isGroupToggle && $groupPolicyResponse->isNotSet();
-        $isGroupPolicyDisabled = !$groupPolicyResponse->isNotSet() && !$groupPolicyResponse->isEnabled();
+        $isGroupPolicyDisabled = $this->isGroupPolicyDisabled( $isGroupToggle, $groupPolicyResponse );
 
+        return $isGroupPolicyDisabled ? false : null;
+    }
+
+    /**
+     * @param bool $isGroupToggle
+     * @param TogglePolicyResponse $response
+     * @return bool
+     */
+    private function isGroupPolicyDisabled( $isGroupToggle, TogglePolicyResponse $response )
+    {
+        $isGroupToggleWithUnsetGroupPolicy = $isGroupToggle && $response->isNotSet();
+        $isGroupPolicyDisabled = !$response->isNotSet() && !$response->isEnabled();
         return ( $isGroupToggleWithUnsetGroupPolicy || $isGroupPolicyDisabled ) ? false : null;
     }
 

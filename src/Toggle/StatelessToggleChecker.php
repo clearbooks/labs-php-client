@@ -201,6 +201,6 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return true;
         }
 
-        return $this->isVisibleToggleActiveForFutureRelease();
+        return $this->isVisibleToggleActiveForFutureRelease( $toggleName, $user, $group, $segments );
     }
 }

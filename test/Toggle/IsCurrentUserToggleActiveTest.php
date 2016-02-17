@@ -404,7 +404,7 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
         $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
 
         $lockedSegment1 = new SegmentStub( 1, 10 );
-        $lockedSegment2 = new SegmentStub( 1, 15 );
+        $lockedSegment2 = new SegmentStub( 2, 15 );
         $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
 
         $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );

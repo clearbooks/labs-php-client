@@ -152,18 +152,10 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
      * @param User $user
      * @param Group $group
      * @param Segment[] $segments
-     * @return bool is it active
+     * @return bool|null
      */
-    public function isToggleActive( $toggleName, User $user, Group $group, array $segments )
+    private function isVisibleToggleActiveForFutureRelease( $toggleName, User $user, Group $group, array $segments )
     {
-        if ( !$this->toggleGateway->isToggleVisibleForUsers($toggleName) ) {
-            return false;
-        }
-
-        if ( $this->toggleGateway->isReleaseDateOfToggleReleaseTodayOrInThePast( $toggleName ) ) {
-            return true;
-        }
-
         $isGroupToggle = $this->toggleGateway->isGroupToggle( $toggleName );
         if ( !$isGroupToggle ) {
             $lockedSegments = $this->filterSegmentsByLockedProperty( $segments, true );
@@ -190,5 +182,25 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
         }
 
         return $this->autoSubscribersGateway->isUserAutoSubscriber( $user );
+    }
+
+    /**
+     * @param string $toggleName
+     * @param User $user
+     * @param Group $group
+     * @param Segment[] $segments
+     * @return bool is it active
+     */
+    public function isToggleActive( $toggleName, User $user, Group $group, array $segments )
+    {
+        if ( !$this->toggleGateway->isToggleVisibleForUsers( $toggleName ) ) {
+            return false;
+        }
+
+        if ( $this->toggleGateway->isReleaseDateOfToggleReleaseTodayOrInThePast( $toggleName ) ) {
+            return true;
+        }
+
+        return $this->isVisibleToggleActiveForFutureRelease();
     }
 }

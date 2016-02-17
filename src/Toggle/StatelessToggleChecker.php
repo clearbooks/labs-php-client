@@ -120,9 +120,8 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return true;
         }
 
-        $isGroupPolicyDisabled = $this->isGroupPolicyDisabled( $isGroupToggle, $groupPolicyResponse );
-
-        return $isGroupPolicyDisabled ? false : null;
+        $isGroupPolicyDisabledOrDefaultsToDisabled = $this->isGroupPolicyDisabledOrDefaultsToDisabled( $isGroupToggle, $groupPolicyResponse );
+        return $isGroupPolicyDisabledOrDefaultsToDisabled ? false : null;
     }
 
     /**
@@ -130,11 +129,11 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
      * @param TogglePolicyResponse $response
      * @return bool
      */
-    private function isGroupPolicyDisabled( $isGroupToggle, TogglePolicyResponse $response )
+    private function isGroupPolicyDisabledOrDefaultsToDisabled( $isGroupToggle, TogglePolicyResponse $response )
     {
         $isGroupToggleWithUnsetGroupPolicy = $isGroupToggle && $response->isNotSet();
         $isGroupPolicyDisabled = !$response->isNotSet() && !$response->isEnabled();
-        return ( $isGroupToggleWithUnsetGroupPolicy || $isGroupPolicyDisabled ) ? false : null;
+        return $isGroupToggleWithUnsetGroupPolicy || $isGroupPolicyDisabled;
     }
 
     /**

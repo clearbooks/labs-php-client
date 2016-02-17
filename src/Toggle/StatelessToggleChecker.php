@@ -150,6 +150,30 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     /**
      * @param string $toggleName
      * @param User $user
+     * @param Segment[] $segments
+     * @return bool|null
+     */
+    private function isVisibleToggleActiveForFutureReleasesIfLockedSegmentPolicyAndGroupPolicyHasNoEffect( $toggleName,
+                                                                                                           User $user,
+                                                                                                           array $segments )
+    {
+        $userPolicyResult = $this->evaluateUserPolicyForToggle( $toggleName, $user );
+        if ( $userPolicyResult !== null ) {
+            return $userPolicyResult;
+        }
+
+        $notLockedSegments = $this->filterSegmentsByLockedProperty( $segments, false );
+        $notLockedSegmentPolicyResult = $this->evaluateSegmentPoliciesForToggle( $toggleName, $notLockedSegments );
+        if ( $notLockedSegmentPolicyResult !== null ) {
+            return $notLockedSegmentPolicyResult;
+        }
+
+        return $this->autoSubscribersGateway->isUserAutoSubscriber( $user );
+    }
+
+    /**
+     * @param string $toggleName
+     * @param User $user
      * @param Group $group
      * @param Segment[] $segments
      * @return bool|null
@@ -170,18 +194,7 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return $groupPolicyResult;
         }
 
-        $userPolicyResult = $this->evaluateUserPolicyForToggle( $toggleName, $user );
-        if ( $userPolicyResult !== null ) {
-            return $userPolicyResult;
-        }
-
-        $notLockedSegments = $this->filterSegmentsByLockedProperty( $segments, false );
-        $notLockedSegmentPolicyResult = $this->evaluateSegmentPoliciesForToggle( $toggleName, $notLockedSegments );
-        if ( $notLockedSegmentPolicyResult !== null ) {
-            return $notLockedSegmentPolicyResult;
-        }
-
-        return $this->autoSubscribersGateway->isUserAutoSubscriber( $user );
+        return $this->isVisibleToggleActiveForFutureReleasesIfLockedSegmentPolicyAndGroupPolicyHasNoEffect( $toggleName, $user, $segments );
     }
 
     /**

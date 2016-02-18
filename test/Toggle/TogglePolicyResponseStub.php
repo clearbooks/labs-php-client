@@ -3,19 +3,17 @@ namespace Clearbooks\Labs\Client\Toggle;
 
 class TogglePolicyResponseStub implements UseCase\Response\TogglePolicyResponse
 {
-    /** @var bool */
-    private $isSet;
-    /** @var bool */
-    private $enabled;
+    /**
+     * @var bool|null
+     */
+    private $enabled = null;
 
     /**
      * TogglePolicyResponseStub constructor.
-     * @param bool $isSet
-     * @param bool $enabled
+     * @param bool|null $enabled
      */
-    public function __construct($isSet, $enabled)
+    public function __construct( $enabled = null )
     {
-        $this->isSet = $isSet;
         $this->enabled = $enabled;
     }
 
@@ -24,7 +22,7 @@ class TogglePolicyResponseStub implements UseCase\Response\TogglePolicyResponse
      */
     public function isEnabled()
     {
-        return $this->isSet && $this->enabled;
+        return $this->enabled;
     }
 
     /**
@@ -32,7 +30,7 @@ class TogglePolicyResponseStub implements UseCase\Response\TogglePolicyResponse
      */
     public function isNotSet()
     {
-        return !$this->isSet;
+        return $this->enabled === null;
     }
 }
 //EOF TogglePolicyResponseStub.php

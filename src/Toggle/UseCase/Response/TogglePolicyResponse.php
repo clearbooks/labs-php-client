@@ -7,6 +7,7 @@ interface TogglePolicyResponse
      * @return bool
      */
     public function isEnabled();
+
     /**
      * @return bool
      */

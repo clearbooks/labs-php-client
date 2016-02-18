@@ -17,6 +17,9 @@ class GroupStub implements Group
         $this->groupId = $groupId;
     }
 
+    /**
+     * @return string
+     */
     public function getId()
     {
         return $this->groupId;

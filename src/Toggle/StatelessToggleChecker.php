@@ -10,6 +10,8 @@ use Clearbooks\Labs\Client\Toggle\Gateway\SegmentTogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\TogglePolicyGateway;
 use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGateway;
+use Clearbooks\Labs\Client\Toggle\Segment\SegmentLockedPropertyFilter;
+use Clearbooks\Labs\Client\Toggle\Segment\SegmentPolicyEvaluator;
 use Clearbooks\Labs\Client\Toggle\UseCase\Response\TogglePolicyResponse;
 
 class StatelessToggleChecker implements UseCase\ToggleChecker
@@ -40,71 +42,38 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     private $segmentTogglePolicyGateway;
 
     /**
+     * @var SegmentLockedPropertyFilter
+     */
+    private $segmentLockedPropertyFilter;
+
+    /**
+     * @var SegmentPolicyEvaluator
+     */
+    private $segmentPolicyEvaluator;
+
+    /**
      * @param ToggleGateway $toggleGateway
      * @param UserTogglePolicyGateway $userPolicyGateway
      * @param GroupTogglePolicyGateway $groupPolicyGateway
      * @param AutoSubscribersGateway $autoSubscribersGateway
      * @param SegmentTogglePolicyGateway $segmentTogglePolicyGateway
+     * @param SegmentLockedPropertyFilter $segmentLockedPropertyFilter
+     * @param SegmentPolicyEvaluator $segmentPolicyEvaluator
      */
     public function __construct( ToggleGateway $toggleGateway, UserTogglePolicyGateway $userPolicyGateway,
                                  GroupTogglePolicyGateway $groupPolicyGateway,
                                  AutoSubscribersGateway $autoSubscribersGateway,
-                                 SegmentTogglePolicyGateway $segmentTogglePolicyGateway )
+                                 SegmentTogglePolicyGateway $segmentTogglePolicyGateway,
+                                 SegmentLockedPropertyFilter $segmentLockedPropertyFilter,
+                                 SegmentPolicyEvaluator $segmentPolicyEvaluator )
     {
         $this->toggleGateway = $toggleGateway;
         $this->groupPolicyGateway = $groupPolicyGateway;
         $this->userPolicyGateway = $userPolicyGateway;
         $this->autoSubscribersGateway = $autoSubscribersGateway;
         $this->segmentTogglePolicyGateway = $segmentTogglePolicyGateway;
-    }
-
-    /**
-     * @param Segment[] $segments
-     * @param bool $returnLockedSegments
-     * @return Segment[]
-     */
-    private function filterSegmentsByLockedProperty( array $segments, $returnLockedSegments )
-    {
-        return array_filter( $segments, function( $segment ) use ( $returnLockedSegments ) {
-            /** @var Segment $segment */
-            return ( $returnLockedSegments && $segment->isLocked() ) || ( !$returnLockedSegments && !$segment->isLocked() );
-        } );
-    }
-
-    /**
-     * @param Segment[] $segments
-     */
-    private function orderSegmentsByPriority( array &$segments )
-    {
-        usort( $segments, function ( Segment $segment1, Segment $segment2 ) {
-            if ( $segment1->getPriority() === $segment2->getPriority() ) {
-                return 0;
-            }
-
-            return $segment1->getPriority() > $segment2->getPriority() ? -1 : 1;
-        } );
-    }
-
-    /**
-     * @param array $segments
-     * @param string $toggleName
-     * @return bool|null
-     */
-    private function evaluateSegmentPoliciesForToggle( $toggleName, array $segments )
-    {
-        $this->orderSegmentsByPriority( $segments );
-
-        foreach ( $segments as $segment ) {
-            $segmentPolicyResponse = $this->segmentTogglePolicyGateway->getTogglePolicy( $toggleName, $segment );
-
-            if ( $segmentPolicyResponse->isNotSet() ) {
-                continue;
-            }
-
-            return $segmentPolicyResponse->isEnabled();
-        }
-
-        return null;
+        $this->segmentLockedPropertyFilter = $segmentLockedPropertyFilter;
+        $this->segmentPolicyEvaluator = $segmentPolicyEvaluator;
     }
 
     /**
@@ -162,8 +131,8 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return $userPolicyResult;
         }
 
-        $notLockedSegments = $this->filterSegmentsByLockedProperty( $segments, false );
-        $notLockedSegmentPolicyResult = $this->evaluateSegmentPoliciesForToggle( $toggleName, $notLockedSegments );
+        $notLockedSegments = $this->segmentLockedPropertyFilter->filterNotLockedSegments( $segments );
+        $notLockedSegmentPolicyResult = $this->segmentPolicyEvaluator->evaluateSegmentPoliciesForToggle( $toggleName, $notLockedSegments );
         if ( $notLockedSegmentPolicyResult !== null ) {
             return $notLockedSegmentPolicyResult;
         }
@@ -182,8 +151,8 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     {
         $isGroupToggle = $this->toggleGateway->isGroupToggle( $toggleName );
         if ( !$isGroupToggle ) {
-            $lockedSegments = $this->filterSegmentsByLockedProperty( $segments, true );
-            $lockedSegmentPolicyResult = $this->evaluateSegmentPoliciesForToggle( $toggleName, $lockedSegments );
+            $lockedSegments = $this->segmentLockedPropertyFilter->filterLockedSegments( $segments );
+            $lockedSegmentPolicyResult = $this->segmentPolicyEvaluator->evaluateSegmentPoliciesForToggle( $toggleName, $lockedSegments );
             if ( $lockedSegmentPolicyResult !== null ) {
                 return $lockedSegmentPolicyResult;
             }

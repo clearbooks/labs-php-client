@@ -12,9 +12,8 @@ class SegmentLockedPropertyFilter
      */
     private function filterSegmentsByLockedProperty( array $segments, $returnLockedSegments )
     {
-        return array_filter( $segments, function( $segment ) use ( $returnLockedSegments ) {
-            /** @var Segment $segment */
-            return ( $returnLockedSegments && $segment->isLocked() ) || ( !$returnLockedSegments && !$segment->isLocked() );
+        return array_filter( $segments, function( Segment $segment ) use ( $returnLockedSegments ) {
+            return $returnLockedSegments === $segment->isLocked();
         } );
     }
 

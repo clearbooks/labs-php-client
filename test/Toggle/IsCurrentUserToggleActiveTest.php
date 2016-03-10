@@ -13,6 +13,9 @@ use Clearbooks\Labs\Client\Toggle\Gateway\GroupTogglePolicyGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\SegmentTogglePolicyGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Gateway\UserTogglePolicyGatewayMock;
+use Clearbooks\Labs\Client\Toggle\Segment\SegmentLockedPropertyFilter;
+use Clearbooks\Labs\Client\Toggle\Segment\SegmentPolicyEvaluator;
+use Clearbooks\Labs\Client\Toggle\Segment\SegmentPriorityArranger;
 use Clearbooks\Labs\Client\Toggle\UseCase\IsCurrentUserToggleActive;
 
 class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
@@ -78,7 +81,8 @@ class IsCurrentUserToggleActiveTest extends \PHPUnit_Framework_TestCase
         $this->statelessToggleChecker = new StatelessToggleChecker(
                 $this->toggleGatewayMock, $this->userPolicyGatewayMock,
                 $this->groupPolicyGatewayMock, $this->autoSubscribersGatewayMock,
-                $this->segmentPolicyGatewayMock
+                $this->segmentPolicyGatewayMock, new SegmentLockedPropertyFilter(),
+                new SegmentPolicyEvaluator( new SegmentPriorityArranger(), $this->segmentPolicyGatewayMock )
         );
 
         $this->currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ ] );

@@ -104,6 +104,17 @@ class CanDefaultToggleStatusBeOverruledTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function GivenGroupToggleAndLockedSegment_ExpectTrue()
+    {
+        $segments = [ new SegmentStub( 1, 1, true ) ];
+        $this->toggleGatewayMock->setIsGroupToggle( self::TOGGLE_NAME, true );
+        $this->segmentTogglePolicyGatewayMock->setTogglePolicyDisabled( self::TOGGLE_NAME, $segments[0] );
+        $this->assertCanBeOverruledGivenSegments( $segments );
+    }
+
+    /**
+     * @test
+     */
     public function GivenMultipleSegmentsWithoutPolicySetAndSegmentPolicySetForALockedSegment_ExpectFalse()
     {
         $segments = [

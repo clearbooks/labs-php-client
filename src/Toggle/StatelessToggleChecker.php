@@ -131,8 +131,7 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
             return $userPolicyResult;
         }
 
-        $notLockedSegments = $this->segmentLockedPropertyFilter->filterNotLockedSegments( $segments );
-        $notLockedSegmentPolicyResult = $this->segmentPolicyEvaluator->evaluateSegmentPoliciesForToggle( $toggleName, $notLockedSegments );
+        $notLockedSegmentPolicyResult = $this->evaluateSegment( $toggleName, $segments );
         if ( $notLockedSegmentPolicyResult !== null ) {
             return $notLockedSegmentPolicyResult;
         }
@@ -160,10 +159,14 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
 
         $groupPolicyResult = $this->evaluateGroupPolicyForToggle( $toggleName, $group, $isGroupToggle );
         if ( $groupPolicyResult !== null ) {
+            $notLockedSegmentPolicyResult = $this->evaluateSegment( $toggleName, $segments );
+            if( $notLockedSegmentPolicyResult ) {
+                return $notLockedSegmentPolicyResult;
+            }
             return $groupPolicyResult;
+        } else {
+            return $this->isVisibleToggleActiveForFutureReleasesIfLockedSegmentPolicyAndGroupPolicyHasNoEffect( $toggleName, $user, $segments );
         }
-
-        return $this->isVisibleToggleActiveForFutureReleasesIfLockedSegmentPolicyAndGroupPolicyHasNoEffect( $toggleName, $user, $segments );
     }
 
     /**
@@ -184,5 +187,22 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
         }
 
         return $this->isVisibleToggleActiveForFutureRelease( $toggleName, $user, $group, $segments );
+    }
+
+    /**
+     * @param $toggleName
+     * @param array $segments
+     * @return bool|null
+     */
+    private function evaluateSegment( $toggleName, array $segments )
+    {
+        $notLockedSegments = $this->segmentLockedPropertyFilter->filterNotLockedSegments(
+            $segments
+        );
+        $notLockedSegmentPolicyResult = $this->segmentPolicyEvaluator->evaluateSegmentPoliciesForToggle(
+            $toggleName,
+            $notLockedSegments
+        );
+        return $notLockedSegmentPolicyResult;
     }
 }

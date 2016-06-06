@@ -53,4 +53,12 @@ class SegmentStub implements Segment
     {
         return $this->locked;
     }
+
+    /** @param int $priority */
+    public function setPriority( $priority )
+    {
+        $this->priority = $priority;
+    }
+
+    
 }

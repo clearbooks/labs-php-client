@@ -215,9 +215,12 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
      */
     private function isGroupToggleFromTableRowItem( $row )
     {
-        return !empty( $row['User toggle'] )
-            ? !$this->yesToBool( $row['User toggle'])
-            : $this->yesToBool( $row['Group toggle'] );
+        if ( !empty( $row['User toggle'] ) ) {
+            return !$this->yesToBool( $row['User toggle'] );
+        } else if( isset( $row['Group toggle'] ) ) {
+            return $this->yesToBool( $row['Group toggle'] );
+        }
+        return false;
     }
 
     /**

@@ -22,50 +22,186 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
 {
     const TEST_TOGGLE = "test toggle";
 
-    /**
-     * @var BaseTogglePolicyGatewayMock
-     */
+    /** @var BaseTogglePolicyGatewayMock */
     private $groupPolicyGatewayMock;
 
-    /**
-     * @var BaseTogglePolicyGatewayMock
-     */
+    /** @var BaseTogglePolicyGatewayMock */
     private $userPolicyGatewayMock;
 
-    /**
-     * @var ToggleGatewayMock
-     */
+    /** @var ToggleGatewayMock */
     private $toggleGatewayMock;
 
-    /**
-     * @var AutoSubscribersGatewayMock
-     */
+    /** @var AutoSubscribersGatewayMock */
     private $autoSubscribersGatewayMock;
 
-    /**
-     * @var SegmentTogglePolicyGatewayMock
-     */
+    /** @var SegmentTogglePolicyGatewayMock */
     private $segmentPolicyGatewayMock;
 
-    /**
-     * @var StatelessToggleChecker
-     */
+    /** @var StatelessToggleChecker */
     private $statelessToggleChecker;
 
-    /**
-     * @var IsCurrentUserToggleActive
-     */
+    /** @var IsCurrentUserToggleActive */
     private $currentUserToggleChecker;
 
-    /**
-     * @var User
-     */
+    /** @var User */
     private $currentUser;
 
-    /**
-     * @var Group
-     */
+    /** @var Group */
     private $currentGroup;
+
+    /** @var int */
+    private $nextSegmentId = 0;
+
+
+    private function setToggleVisible()
+    {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+    }
+
+    private function setToggleReleased()
+    {
+        $this->toggleGatewayMock->setIsReleaseDateTodayOrInThePast( self::TEST_TOGGLE, true );
+    }
+
+    private function assertToggleIsActive()
+    {
+        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+    }
+
+    private function assertToggleIsInactive()
+    {
+        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+    }
+
+    private function setToggleInvisible()
+    {
+        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, false );
+    }
+
+    private function setToggleIsInEnabledLockedSegment()
+    {
+        $lockedSegment = $this->createSegment( 10, true  );
+        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled(
+            self::TEST_TOGGLE,
+            $lockedSegment
+        );
+        $this->createCurrentToggleCheckerWithSegments(
+            [ $lockedSegment ]
+        );
+    }
+
+    /**
+     * @param $priority
+     * @param $locked
+     * @return SegmentStub
+     */
+    private function createSegment( $priority, $locked )
+    {
+        return new SegmentStub( $this->nextSegmentId++, $priority, $locked );
+    }
+
+    /**
+     * @param $priority
+     * @param $togglePolicyEnabled
+     * @return SegmentStub
+     */
+    private function setLockedSegmentPolicy( $priority, $togglePolicyEnabled )
+    {
+        $segment = $this->createSegment( $priority, true );
+        $this->setSegmentPolicy( $togglePolicyEnabled, $segment );
+        return $segment;
+    }
+
+    /**
+     * @param $priority
+     * @param $togglePolicyEnabled
+     * @return SegmentStub
+     */
+    private function setUnlockedSegmentPolicy( $priority, $togglePolicyEnabled )
+    {
+        $segment = $this->createSegment( $priority, false );
+        $this->setSegmentPolicy( $togglePolicyEnabled, $segment );
+        return $segment;
+    }
+
+    /**
+     * @param $togglePolicyEnabled
+     * @param $segment
+     */
+    private function setSegmentPolicy( $togglePolicyEnabled, $segment )
+    {
+        if ( $togglePolicyEnabled ) {
+            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled(
+                self::TEST_TOGGLE,
+                $segment
+            );
+        } else {
+            $this->segmentPolicyGatewayMock->setTogglePolicyDisabled(
+                self::TEST_TOGGLE,
+                $segment
+            );
+        }
+    }
+
+    private function setUserPolicyEnabled()
+    {
+        $this->userPolicyGatewayMock->setTogglePolicyEnabled(
+            self::TEST_TOGGLE,
+            $this->currentUser
+        );
+    }
+
+    private function setUserPolicyDisabled()
+    {
+        $this->userPolicyGatewayMock->setTogglePolicyDisabled(
+            self::TEST_TOGGLE,
+            $this->currentUser
+        );
+    }
+
+    private function setIsGroupToggle()
+    {
+        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
+    }
+
+    private function setIsNotGroupToggle()
+    {
+        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, false );
+    }
+
+    private function setGroupPolicyEnabled()
+    {
+        $this->groupPolicyGatewayMock->setTogglePolicyEnabled(
+            self::TEST_TOGGLE,
+            $this->currentGroup
+        );
+    }
+
+    private function setGroupPolicyDisabled()
+    {
+        $this->groupPolicyGatewayMock->setTogglePolicyDisabled(
+            self::TEST_TOGGLE,
+            $this->currentGroup
+        );
+    }
+
+    private function setUserAutoSubscribed()
+    {
+        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+    }
+
+    /**
+     * @param Segment[] $segments
+     */
+    private function createCurrentToggleCheckerWithSegments( array $segments )
+    {
+        $this->currentUserToggleChecker = new CurrentUserToggleChecker(
+            $this->currentUser,
+            $this->currentGroup,
+            $segments,
+            $this->statelessToggleChecker
+        );
+    }
 
     public function setUp()
     {
@@ -85,21 +221,7 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
                 new SegmentPolicyEvaluator( new SegmentPriorityArranger(), $this->segmentPolicyGatewayMock )
         );
 
-        $this->currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ ] );
-    }
-
-    /**
-     * @param Segment[] $segments
-     * @return CurrentUserToggleChecker
-     */
-    private function createCurrentToggleCheckerWithSegments( array $segments )
-    {
-        return new CurrentUserToggleChecker(
-                $this->currentUser,
-                $this->currentGroup,
-                $segments,
-                $this->statelessToggleChecker
-        );
+        $this->createCurrentToggleCheckerWithSegments( [ ] );
     }
 
     /**
@@ -107,9 +229,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndNotSetByPolicyButReleaseDateIsTodayOrInThePast_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsReleaseDateTodayOrInThePast( self::TEST_TOGGLE, true );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setToggleReleased();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -117,8 +240,9 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleNotVisibleAndNotSetByPolicyButReleaseDateIsTodayOrInThePast_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setIsReleaseDateTodayOrInThePast( self::TEST_TOGGLE, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleReleased();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -126,21 +250,21 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndReleaseDateIsInTheFuture_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
      * @test
      */
-    public function GivenToggleIsNotVisibleAndReleaseDateIsInThePast_ThenExpectInactive()
+    public function GivenToggleIsNotVisibleAndReleaseDateIsInThePastAndInEnabledLockedSegment_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, false );
-        $this->toggleGatewayMock->setIsReleaseDateTodayOrInThePast( self::TEST_TOGGLE, true );
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment );
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleInvisible();
+        $this->setToggleReleased();
+        $this->setToggleIsInEnabledLockedSegment();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -148,13 +272,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleIsVisible_WhenLockedSegmentPolicyIsEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
+        $this->setToggleIsInEnabledLockedSegment();
 
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment );
-
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -162,15 +283,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleIsVisible_AndHighPriorityDisabledSegmentPolicyIsSet_ThenExpectToggleToBeInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment1 = new SegmentStub( 1, 9000, true );
-        $lockedSegment2 = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment2 );
+        $lockedSegment1 = $this->setLockedSegmentPolicy( 9000, true );
+        $lockedSegment2 = $this->setLockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment2, $lockedSegment1 ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment2, $lockedSegment1 ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -178,9 +297,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFuture_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -188,9 +308,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndDisabledByUserPolicyAndReleaseDateIsInTheFuture_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyDisabled();
+
+        $this->assertToggleIsInactive();
     }
 
 
@@ -199,10 +320,11 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenGroupToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFuture_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -210,25 +332,37 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenUserToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFuture_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, false );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
+        $this->setToggleVisible();
+        $this->setIsNotGroupToggle();
+        $this->setUserPolicyEnabled();
 
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment );
+        $lockedSegment = $this->setLockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
      * @test
      */
-    public function GivenToggleVisibleAndGroupPolicyIsEnabled_ThenExpectActive()
+    public function GivenUserToggleVisibleAndGroupPolicyIsEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentGroup );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setGroupPolicyEnabled();
+
+        $this->assertToggleIsInactive();
+    }
+
+    /**
+     * @test
+     */
+    public function GivenGroupToggleVisibleAndGroupPolicyIsEnabled_ThenExpectActive()
+    {
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setGroupPolicyEnabled();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -236,9 +370,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndGroupPolicyIsDisabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentGroup );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setGroupPolicyDisabled();
+
+        $this->assertToggleIsInactive();
     }
 
 
@@ -247,13 +382,12 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndUnlockedSegmentPolicyEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment = new SegmentStub( 1, 10 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment );
+        $unlockedSegment = $this->setUnlockedSegmentPolicy( 10, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -261,14 +395,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndSegmentPolicyEnabled_WhenPassingAdditionalUnsetSegment_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment1 = new SegmentStub( 1, 10 );
-        $lockedSegment2 = new SegmentStub( 2, 15 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
+        $unlockedSegment1 = $this->setUnlockedSegmentPolicy( 10, true );
+        $unlockedSegment2 = $this->createSegment( 15, false );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-        $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -276,13 +409,12 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndSegmentPolicyDisabled_ThenExpectInActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment = new SegmentStub( 1, 10 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment );
+        $unlockedSegment = $this->setUnlockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -290,14 +422,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndSegmentPolicyDisabledAndUserAutoSubscribed_ThenExpectInActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->setToggleVisible();
+        $this->setUserAutoSubscribed();
 
-        $lockedSegment = new SegmentStub( 1, 10 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment );
+        $unlockedSegment = $this->setUnlockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -305,93 +436,78 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndUserAutoSubscribed_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
+        $this->setToggleVisible();
+        $this->setUserAutoSubscribed();
 
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
+    /**
+     * @test
+     */
+    public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSet_ThenSegmentPrioritiesDecides()
+    {
+        $this->setToggleVisible();
+        $unlockedSegment1 = $this->setUnlockedSegmentPolicy( 10, false );
+        $unlockedSegment2 = $this->setUnlockedSegmentPolicy( 100, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
 
+        $this->assertToggleIsActive();
+    }
 
+    /**
+     * @test
+     */
+    public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSetWithSamePriority_ThenOneOfThemDecide()
+    {
+        $this->setToggleVisible();
+        $unlockedSegment1 = $this->setUnlockedSegmentPolicy( 10, false );
+        $unlockedSegment2 = $this->setUnlockedSegmentPolicy( 10, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
 
+        $this->assertToggleIsInactive();
+    }
 
+    /**
+     * @test
+     */
+    public function GivenToggleVisibleAndIsGroupToggleAndIsInEnabledSegment_ThenReturnIsActive()
+    {
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
 
-        /**
-         * @test
-         */
-        public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSet_ThenSegmentPrioritiesDecides()
-        {
-            $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $unlockedSegment1 = $this->createSegment( 10, false );
+        $unlockedSegment2 = $this->setUnlockedSegmentPolicy( 15, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
 
-            $lockedSegment1 = new SegmentStub( 1, 10 );
-            $lockedSegment2 = new SegmentStub( 2, 100 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment1 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment2 );
+        $this->assertToggleIsActive();
+    }
 
-            $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-            $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
-        }
+    /**
+     * @test
+     */
+    public function GivenToggleVisibleAndIsGroupToggleAndGroupToggleIsDisabledAndIsInEnabledSegment_ThenReturnIsActive()
+    {
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setGroupPolicyDisabled();
 
-        /**
-         * @test
-         */
-        public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSetWithSamePriority_ThenOneOfThemDecide()
-        {
-            $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $unlockedSegment1 = $this->createSegment( 10, false );
+        $unlockedSegment2 = $this->setUnlockedSegmentPolicy( 15, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
 
-            $lockedSegment1 = new SegmentStub( 1, 10 );
-            $lockedSegment2 = new SegmentStub( 2, 10 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment2 );
-
-            $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-            $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
-        }
-
-        /**
-         * @test
-         */
-        public function GivenToggleVisibleAndIsGroupToggleAndIsInEnabledSegment_ThenReturnIsActive()
-        {
-            $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-            $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-
-            $lockedSegment1 = new SegmentStub( 1, 10 );
-            $lockedSegment2 = new SegmentStub( 2, 15 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
-
-            $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-            $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
-        }
-
-        /**
-         * @test
-         */
-        public function GivenToggleVisibleAndIsGroupToggleAndGroupToggleIsDisabledAndIsInEnabledSegment_ThenReturnIsActive()
-        {
-            $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-            $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-
-            $this->groupPolicyGatewayMock->setTogglePolicy( self::TEST_TOGGLE, $this->currentGroup, false );
-
-            $lockedSegment1 = new SegmentStub( 1, 10 );
-            $lockedSegment2 = new SegmentStub( 2, 15 );
-            $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
-
-            $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-            $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
-        }
-
-
+        $this->assertToggleIsInactive();
+    }
 
     /**
      * @test
      */
     public function GivenToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsNotAutoSubscribed_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -399,8 +515,9 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleNotVisibleAndNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
     {
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setUserAutoSubscribed();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -408,10 +525,11 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenGroupToggleVisibleButNotSetByPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setUserAutoSubscribed();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -419,22 +537,22 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndDisabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyDisabled();
+        $this->setUserAutoSubscribed();
+
+        $this->assertToggleIsInactive();
     }
-
-
 
     /**
      * @test
      */
     public function GivenToggleVisibleAndNotSetByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserAutoSubscribed();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -442,10 +560,11 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndEnabledByUserPolicyAndReleaseDateIsInTheFutureAndUserIsAutoSubscribed_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->autoSubscribersGatewayMock->setUserSubscriberStatus( $this->currentUser, true );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyEnabled();
+        $this->setUserAutoSubscribed();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -453,7 +572,7 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleNotVisible_ThenExpectInactive()
     {
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -461,8 +580,9 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndGroupPolicyIsNotSetAndUserPolicyIsNotSet_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+
+        $this->assertToggleIsInactive();
     }
 
 
@@ -471,9 +591,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndGroupPolicyIsNotSetAndUserPolicyIsDisabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyDisabled();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -481,9 +602,10 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndGroupPolicyIsNotSetAndUserPolicyIsEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -491,10 +613,11 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndToggleTypeIsGroupAndGroupPolicyIsNotSetAndUserPolicyIsEnabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -502,11 +625,12 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndToggleTypeIsGroupAndGroupPolicyIsDisabledAndUserPolicyIsEnabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentGroup );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertFalse( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setGroupPolicyDisabled();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -514,11 +638,12 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndToggleTypeIsGroupAndGroupPolicyIsEnabledAndUserPolicyIsEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentGroup );
-        $this->userPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentUser );
-        $this->assertTrue( $this->currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
+        $this->setGroupPolicyEnabled();
+        $this->setUserPolicyEnabled();
+
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -526,14 +651,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenGroupToggleVisibleAndNotSetByGroupPolicy_WhenLockedSegmentPolicyIsEnabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->toggleGatewayMock->setIsGroupToggle( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
+        $this->setIsGroupToggle();
 
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment );
+        $lockedSegment = $this->setLockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -541,14 +665,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndDisabledByGroupPolicy_WhenLockedSegmentPolicyIsEnabled_ThenExpectActive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $this->currentGroup );
+        $this->setToggleVisible();
+        $this->setGroupPolicyDisabled();
 
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment );
+        $lockedSegment = $this->setLockedSegmentPolicy( 10, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -556,14 +679,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndEnabledByGroupPolicy_WhenLockedSegmentPolicyIsDisabled_ThenExpectInactive()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
-        $this->groupPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $this->currentGroup );
+        $this->setToggleVisible();
+        $this->setGroupPolicyEnabled();
 
-        $lockedSegment = new SegmentStub( 1, 10, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment );
+        $lockedSegment = $this->setLockedSegmentPolicy( 10, false );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsInactive();
     }
 
     /**
@@ -571,15 +693,13 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndMultipleLockedSegmentsAreSet_ThenSegmentPriorityDecides()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment1 = new SegmentStub( 1, 10, true );
-        $lockedSegment2 = new SegmentStub( 2, 15, true );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment1 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment2 );
+        $lockedSegment1 = $this->setLockedSegmentPolicy( 10, false );
+        $lockedSegment2 = $this->setLockedSegmentPolicy( 15, true );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-        $this->assertTrue( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->assertToggleIsActive();
     }
 
     /**
@@ -587,17 +707,15 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
      */
     public function GivenToggleVisibleAndMultipleSegmentsAreSetIncludingLockedOnes_ThenSegmentPriorityDecidesBetweenTheLockedOnes()
     {
-        $this->toggleGatewayMock->setVisibility( self::TEST_TOGGLE, true );
+        $this->setToggleVisible();
 
-        $lockedSegment1 = new SegmentStub( 1, 5, true );
-        $lockedSegment2 = new SegmentStub( 2, 20, true );
-        $lockedSegment3 = new SegmentStub( 3, 100 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment1 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyDisabled( self::TEST_TOGGLE, $lockedSegment2 );
-        $this->segmentPolicyGatewayMock->setTogglePolicyEnabled( self::TEST_TOGGLE, $lockedSegment3 );
+        $lockedSegment1 = $this->setLockedSegmentPolicy( 5, true );
+        $lockedSegment2 = $this->setLockedSegmentPolicy( 20, false );
+        $unlockedSegment3 = $this->setUnlockedSegmentPolicy( 100, true );
 
-        $currentUserToggleChecker = $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2 ] );
-        $this->assertFalse( $currentUserToggleChecker->isToggleActive( self::TEST_TOGGLE ) );
+        $this->createCurrentToggleCheckerWithSegments( [ $lockedSegment1, $lockedSegment2, $unlockedSegment3 ] );
+
+        $this->assertToggleIsInactive();
     }
 
 }

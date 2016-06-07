@@ -79,8 +79,8 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
         $this->segmentLockedPropertyFilter = $segmentLockedPropertyFilter;
         $this->segmentPolicyEvaluator = $segmentPolicyEvaluator;
     }
-
-
+    
+    
     /**
      * @param string $toggleName
      * @param User $user
@@ -92,13 +92,13 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     {
         $this->visible = $this->toggleGateway->isToggleVisibleForUsers( $toggleName );
         $result = $this->evaluateHierarchicalPolicies( $toggleName, $user, $group, $segments );
-
+        
         if ( !$this->visible ) {
             assert( !$result, 'Not visible toggles are always inactive' );
         }
         return $result;
     }
-
+    
     /**
      * @param string $toggleName
      * @param User $user
@@ -106,38 +106,42 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
      * @param Segment[] $segments
      * @return bool is it active
      */
-    private function evaluateHierarchicalPolicies( $toggleName, User $user, Group $group, array $segments )
+    private function evaluateHierarchicalPolicies(
+        $toggleName,
+        User $user,
+        Group $group,
+        array $segments
+    )
     {
         if ( !$this->visible ) {
             return false;
         }
-
+        
         if ( $this->isReleased( $toggleName ) ) {
             return true;
         }
-
+        
         $lockedSegmentStatus = $this->getLockedSegmentPolicy( $toggleName, $segments );
         if ( $this->isLockedSegmentPolicyApplicable( $lockedSegmentStatus ) ) {
             return $lockedSegmentStatus;
         }
-
+        
         $userToggleStatus = $this->userPolicyGateway->getTogglePolicy( $toggleName, $user );
         if ( $this->isUserPolicyApplicable( $toggleName, $userToggleStatus ) ) {
             return $userToggleStatus->isEnabled();
         }
-
+        
         $groupToggleStatus = $this->groupPolicyGateway->getTogglePolicy( $toggleName, $group );
-        if ( $this->isGroupPolicyApplicable( $groupToggleStatus ) ){
+        if ( $this->isGroupPolicyApplicable( $toggleName, $groupToggleStatus ) ) {
             return $groupToggleStatus->isEnabled();
         }
-
+        
         $unlockedSegmentStatus = $this->getUnlockedSegmentPolicy( $toggleName, $segments );
-        if( $this->isUnlockedSegmentPolicyApplicable( $unlockedSegmentStatus ) ) {
+        if ( $this->isUnlockedSegmentPolicyApplicable( $unlockedSegmentStatus ) ) {
             return $unlockedSegmentStatus;
         }
-
-        return $this->isUserToggle( $toggleName )
-               && $this->isUserAutoSubscribed( $user );
+        
+        return $this->isUserToggle( $toggleName ) && $this->isUserAutoSubscribed( $user );
     }
     
     /**
@@ -185,31 +189,14 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     
     /**
      * @param $toggleName
-     * @return bool
-     */
-    private function isUserToggle( $toggleName )
-    {
-        return !$this->toggleGateway->isGroupToggle( $toggleName );
-    }
-    
-    /**
-     * @param TogglePolicyResponse $userToggleStatus
-     * @return bool
-     */
-    private function isUserPolicySet( TogglePolicyResponse $userToggleStatus )
-    {
-        return !$userToggleStatus->isNotSet();
-    }
-
-    /**
      * @param TogglePolicyResponse $groupToggleStatus
      * @return bool
      */
-    private function isGroupPolicyApplicable( TogglePolicyResponse $groupToggleStatus )
+    private function isGroupPolicyApplicable( $toggleName, TogglePolicyResponse $groupToggleStatus )
     {
-        return !$groupToggleStatus->isNotSet();
+        return $this->isGroupToggle( $toggleName ) && !$groupToggleStatus->isNotSet();
     }
-
+    
     /**
      * @param $toggleName
      * @param array $segments
@@ -226,7 +213,7 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
         );
         return $unlockedSegmentStatus;
     }
-
+    
     /**
      * @param $unlockedSegmentStatus
      * @return bool
@@ -235,7 +222,16 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     {
         return $unlockedSegmentStatus !== null;
     }
-
+    
+    /**
+     * @param $toggleName
+     * @return bool
+     */
+    private function isUserToggle( $toggleName )
+    {
+        return !$this->isGroupToggle( $toggleName );
+    }
+    
     /**
      * @param User $user
      * @return bool
@@ -243,6 +239,24 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     private function isUserAutoSubscribed( User $user )
     {
         return $this->autoSubscribersGateway->isUserAutoSubscriber( $user );
+    }
+    
+    /**
+     * @param TogglePolicyResponse $userToggleStatus
+     * @return bool
+     */
+    private function isUserPolicySet( TogglePolicyResponse $userToggleStatus )
+    {
+        return !$userToggleStatus->isNotSet();
+    }
+    
+    /**
+     * @param $toggleName
+     * @return bool
+     */
+    private function isGroupToggle( $toggleName )
+    {
+        return $this->toggleGateway->isGroupToggle( $toggleName );
     }
     
 }

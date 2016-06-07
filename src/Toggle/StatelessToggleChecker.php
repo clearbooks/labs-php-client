@@ -202,10 +202,10 @@ class StatelessToggleChecker implements UseCase\ToggleChecker
     }
 
     /**
-     * @param $groupToggleStatus
+     * @param TogglePolicyResponse $groupToggleStatus
      * @return bool
      */
-    private function isGroupPolicyApplicable( $groupToggleStatus )
+    private function isGroupPolicyApplicable( TogglePolicyResponse $groupToggleStatus )
     {
         return !$groupToggleStatus->isNotSet();
     }

@@ -458,14 +458,14 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSetWithSamePriority_ThenOneOfThemDecide()
+    public function GivenToggleVisibleAndMultipleNonLockedSegmentPoliciesAreSetWithSamePriority_ThenTheHighestIdSegmentDecides()
     {
         $this->setToggleVisible();
         $unlockedSegment1 = $this->setUnlockedSegmentPolicy( 10, false );
         $unlockedSegment2 = $this->setUnlockedSegmentPolicy( 10, true );
         $this->createCurrentToggleCheckerWithSegments( [ $unlockedSegment1, $unlockedSegment2 ] );
 
-        $this->assertToggleIsInactive();
+        $this->assertToggleIsActive();
     }
 
     /**

@@ -13,7 +13,7 @@ class SegmentPriorityArranger
     {
         usort( $segments, function ( Segment $segment1, Segment $segment2 ) {
             if ( $segment1->getPriority() === $segment2->getPriority() ) {
-                return 0;
+                return $segment2->getId() - $segment1->getId();
             }
 
             return $segment1->getPriority() > $segment2->getPriority() ? -1 : 1;

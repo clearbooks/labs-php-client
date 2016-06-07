@@ -1,12 +1,13 @@
 Feature: Unlocked segments
 
   Background:
-    Given I have toggles:
+    Given I am user "U"
+    And I have toggles:
       | Toggle name            | Is released | Is visible | User toggle |
       | User interface feature | No          | Yes        | Yes         |
       | Invisible feature      | No          | No         | Yes         |
       | Accessible toggle      | No          | Yes        | No          |
-    And I am user "U"
+
 
   Scenario: Unlocked segment, where segment is active
     Given user "U" is in unlocked segment "Segment of users"

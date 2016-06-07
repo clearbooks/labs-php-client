@@ -1,13 +1,14 @@
 Feature: Locked segments
 
   Background:
-    Given I have toggles:
+    Given I am user "U"
+    And I have toggles:
       | Toggle name         | Is released | Is visible | User toggle |
       | Inaccessible toggle | No          | No         | No          |
       | Accessible toggle   | No          | Yes        | No          |
       | Released toggle     | Yes         | Yes        | No          |
       | User toggle         | No          | Yes        | Yes         |
-    And I am user "U"
+
 
   Scenario: User is in segment for toggle, but toggle is not visible
     Given user "U" is in locked segment "Segment of users"

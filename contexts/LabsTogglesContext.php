@@ -1,5 +1,6 @@
 <?php
 
+use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Gherkin\Node\TableNode;
 use Clearbooks\Labs\Client\Toggle\Entity\GroupStub;
 use Clearbooks\Labs\Client\Toggle\Entity\SegmentStub;
@@ -16,6 +17,9 @@ use Clearbooks\Labs\Client\Toggle\StatelessToggleChecker;
 
 class LabsTogglesContext implements \Behat\Behat\Context\Context
 {
+
+    /** @var AutoSubscribersGatewayMock */
+    private $autoSubscribersGateway;
 
     /** @var  GroupTogglePolicyGatewayMock */
     private $groupPolicyGateway;
@@ -34,6 +38,7 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
 
     /** @var string */
     private $userName;
+
     /** @var string */
     private $currentGroup;
 
@@ -46,6 +51,7 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
         $this->segmentTogglePolicyGateway = new SegmentTogglePolicyGatewayMock();
         $this->userPolicyGateway = new UserTogglePolicyGatewayMock();
         $this->groupPolicyGateway = new GroupTogglePolicyGatewayMock();
+        $this->autoSubscribersGateway = new AutoSubscribersGatewayMock();
     }
 
     /**
@@ -55,11 +61,13 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     private function isToggleActive( $toggleName )
     {
 
+
         $toggleChecker = new StatelessToggleChecker(
             $this->toggleGateway,
             $this->userPolicyGateway,
             $this->groupPolicyGateway,
-            new AutoSubscribersGatewayMock(), $this->segmentTogglePolicyGateway,
+            $this->autoSubscribersGateway,
+            $this->segmentTogglePolicyGateway,
             new SegmentLockedPropertyFilter(),
             new SegmentPolicyEvaluator(
                 new SegmentPriorityArranger(), $this->segmentTogglePolicyGateway
@@ -253,6 +261,14 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     public function theCurrentGroupIs( $groupId )
     {
         $this->currentGroup = $groupId;
+    }
+
+    /**
+     * @Given /^user "([^"]*)" is autosubscribed$/
+     */
+    public function userIsAutosubscribed( $userName )
+    {
+        $this->autoSubscribersGateway->setUserSubscriberStatus( new UserStub( $userName ), true );
     }
 
     

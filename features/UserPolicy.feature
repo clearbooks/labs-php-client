@@ -1,14 +1,13 @@
 Feature: User policies
 
   Background:
-    Given I have toggles:
+    Given I am user "U"
+    And I have toggles:
       | Toggle name            | Is released | Is visible | User toggle |
       | Accessible toggle      | No          | Yes        | No          |
       | User interface feature | No          | Yes        | Yes         |
       | Released toggle        | Yes         | Yes        | Yes         |
       | Hidden toggle          | Yes         | No         | Yes         |
-
-    And I am user "U"
 
   Scenario: User policy is enabled for user toggle
     Given user "U" has enabled user policy for toggle "User interface feature"

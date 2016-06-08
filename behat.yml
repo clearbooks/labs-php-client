@@ -1,0 +1,8 @@
+# behat.yml
+default:
+    autoload: [ %paths.base%/contexts ]
+    suites:
+        default:
+            paths:    [ %paths.base%/features ]
+            contexts:
+                - LabsTogglesContext

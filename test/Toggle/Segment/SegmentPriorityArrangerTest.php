@@ -45,4 +45,24 @@ class SegmentPriorityArrangerTest extends \PHPUnit_Framework_TestCase
         $orderedSegments = $this->segmentPriorityArranger->orderSegmentsByPriority( $shuffledSegments );
         $this->assertEquals( $segments, $orderedSegments );
     }
+
+    /**
+     * @test
+     */
+    public function GivenSegmentsWithSamePriority_ThenExpectOrderingToBeDeterminedById()
+    {
+        $segments = [
+            new SegmentStub( 10, 10 ),
+            new SegmentStub( 9, 10 ),
+            new SegmentStub( 1, 10 )
+        ];
+
+        $shuffledSegments = $segments;
+        shuffle( $shuffledSegments );
+
+        $orderedSegments = $this->segmentPriorityArranger->orderSegmentsByPriority( $shuffledSegments );
+        $this->assertEquals( $segments, $orderedSegments );
+    }
+
+
 }

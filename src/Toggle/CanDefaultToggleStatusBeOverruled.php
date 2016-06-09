@@ -43,11 +43,6 @@ class CanDefaultToggleStatusBeOverruled implements UseCase\CanDefaultToggleStatu
             return false;
         }
 
-        $isGroupToggle = $this->toggleGateway->isGroupToggle( $toggleName );
-        if ( $isGroupToggle ) {
-            return true;
-        }
-
         $lockedSegments = $this->segmentLockedPropertyFilter->filterLockedSegments( $segments );
         $lockedSegmentPolicyResult = $this->segmentPolicyEvaluator->evaluateSegmentPoliciesForToggle( $toggleName, $lockedSegments );
         return $lockedSegmentPolicyResult === null;

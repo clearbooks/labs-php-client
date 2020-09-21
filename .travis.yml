@@ -4,7 +4,7 @@ php:
   - 7.3
   - 7.4
 
-install: composer install --dev
+install: composer install
 script:
   - vendor/bin/phpunit -c phpunit.xml --coverage-clover build/logs/clover.xml
   - vendor/bin/behat

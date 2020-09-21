@@ -2,15 +2,16 @@
 namespace Clearbooks\Labs\Client\Toggle\Segment;
 
 use Clearbooks\Labs\Client\Toggle\Entity\SegmentStub;
+use PHPUnit\Framework\TestCase;
 
-class SegmentPriorityArrangerTest extends \PHPUnit_Framework_TestCase
+class SegmentPriorityArrangerTest extends TestCase
 {
     /**
      * @var SegmentPriorityArranger
      */
     private $segmentPriorityArranger;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->segmentPriorityArranger = new SegmentPriorityArranger();

@@ -17,8 +17,9 @@ use Clearbooks\Labs\Client\Toggle\Segment\SegmentLockedPropertyFilter;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPolicyEvaluator;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPriorityArranger;
 use Clearbooks\Labs\Client\Toggle\UseCase\IsCurrentUserToggleActive;
+use PHPUnit\Framework\TestCase;
 
-class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
+class StatelessToggleCheckerTest extends TestCase
 {
     const TEST_TOGGLE = "test toggle";
 
@@ -203,7 +204,7 @@ class StatelessToggleCheckerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->currentUser = new UserStub( 1 );

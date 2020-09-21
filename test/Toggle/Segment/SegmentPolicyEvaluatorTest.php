@@ -4,8 +4,9 @@ namespace Clearbooks\Labs\Client\Toggle\Segment;
 use Clearbooks\Labs\Client\Toggle\Entity\Segment;
 use Clearbooks\Labs\Client\Toggle\Entity\SegmentStub;
 use Clearbooks\Labs\Client\Toggle\Gateway\SegmentTogglePolicyGatewayMock;
+use PHPUnit\Framework\TestCase;
 
-class SegmentPolicyEvaluatorTest extends \PHPUnit_Framework_TestCase
+class SegmentPolicyEvaluatorTest extends TestCase
 {
     const TOGGLE_NAME = "Test toggle";
 
@@ -19,7 +20,7 @@ class SegmentPolicyEvaluatorTest extends \PHPUnit_Framework_TestCase
      */
     private $segmentPolicyEvaluator;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->segmentTogglePolicyGatewayMock = new SegmentTogglePolicyGatewayMock();

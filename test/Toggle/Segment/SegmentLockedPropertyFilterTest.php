@@ -2,15 +2,16 @@
 namespace Clearbooks\Labs\Client\Toggle\Segment;
 
 use Clearbooks\Labs\Client\Toggle\Entity\SegmentStub;
+use PHPUnit\Framework\TestCase;
 
-class SegmentLockedPropertyFilterTest extends \PHPUnit_Framework_TestCase
+class SegmentLockedPropertyFilterTest extends TestCase
 {
     /**
      * @var SegmentLockedPropertyFilter
      */
     private $segmentLockedPropertyFilter;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->segmentLockedPropertyFilter = new SegmentLockedPropertyFilter();

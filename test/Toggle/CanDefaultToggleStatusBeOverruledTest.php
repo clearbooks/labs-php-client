@@ -7,8 +7,9 @@ use Clearbooks\Labs\Client\Toggle\Gateway\ToggleGatewayMock;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentLockedPropertyFilter;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPolicyEvaluator;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPriorityArranger;
+use PHPUnit\Framework\TestCase;
 
-class CanDefaultToggleStatusBeOverruledTest extends \PHPUnit_Framework_TestCase
+class CanDefaultToggleStatusBeOverruledTest extends TestCase
 {
     const TOGGLE_NAME = "Test toggle";
 
@@ -27,7 +28,7 @@ class CanDefaultToggleStatusBeOverruledTest extends \PHPUnit_Framework_TestCase
      */
     private $canDefaultToggleStatusBeOverruled;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->toggleGatewayMock = new ToggleGatewayMock();

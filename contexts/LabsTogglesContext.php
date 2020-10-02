@@ -1,6 +1,6 @@
 <?php
 
-use Behat\Behat\Tester\Exception\PendingException;
+use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Clearbooks\Labs\Client\Toggle\Entity\GroupStub;
 use Clearbooks\Labs\Client\Toggle\Entity\SegmentStub;
@@ -14,8 +14,9 @@ use Clearbooks\Labs\Client\Toggle\Segment\SegmentLockedPropertyFilter;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPolicyEvaluator;
 use Clearbooks\Labs\Client\Toggle\Segment\SegmentPriorityArranger;
 use Clearbooks\Labs\Client\Toggle\StatelessToggleChecker;
+use PHPUnit\Framework\Assert;
 
-class LabsTogglesContext implements \Behat\Behat\Context\Context
+class LabsTogglesContext implements Context
 {
 
     /** @var AutoSubscribersGatewayMock */
@@ -116,19 +117,19 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
         }
 
         foreach ( $table as $row ) {
-            PHPUnit_Framework_Assert::assertEquals(
+            Assert::assertEquals(
                 $this->yesToBool( $row['Is released'] ),
                 $this->toggleGateway->isReleaseDateOfToggleReleaseTodayOrInThePast(
                     $row['Toggle name']
                 )
             );
-            PHPUnit_Framework_Assert::assertEquals(
+            Assert::assertEquals(
                 $this->yesToBool( $row['Is visible'] ),
                 $this->toggleGateway->isToggleVisibleForUsers(
                     $row['Toggle name']
                 )
             );
-            PHPUnit_Framework_Assert::assertEquals(
+            Assert::assertEquals(
                 $this->isGroupToggleFromTableRowItem( $row ),
                 $this->toggleGateway->isGroupToggle(
                     $row['Toggle name']
@@ -143,7 +144,7 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     public function toggleIsNotActive( $toggleName )
     {
         $isToggleActive = $this->isToggleActive( $toggleName );
-        PHPUnit_Framework_Assert::assertFalse( $isToggleActive );
+        Assert::assertFalse( $isToggleActive );
     }
 
     /**
@@ -152,7 +153,7 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     public function toggleIsActive( $toggleName )
     {
         $isToggleActive = $this->isToggleActive( $toggleName );
-        PHPUnit_Framework_Assert::assertTrue( $isToggleActive );
+        Assert::assertTrue( $isToggleActive );
     }
     
     /**
@@ -170,8 +171,8 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     {
         $this->segmentTogglePolicyGateway->setTogglePolicyEnabled( $toggleName, new SegmentStub( $segmentId, 10, true ) );
         $togglePolicyResponse = $this->segmentTogglePolicyGateway->getTogglePolicy( $toggleName, new SegmentStub( $segmentId, 10, true ) );
-        PHPUnit_Framework_Assert::assertTrue( $togglePolicyResponse->isEnabled() );
-        PHPUnit_Framework_Assert::assertFalse( $togglePolicyResponse->isNotSet() );
+        Assert::assertTrue( $togglePolicyResponse->isEnabled() );
+        Assert::assertFalse( $togglePolicyResponse->isNotSet() );
     }
 
     /**
@@ -181,8 +182,8 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     {
         $this->segmentTogglePolicyGateway->setTogglePolicyDisabled( $toggleName, new SegmentStub( $segmentId, 10, true ) );
         $togglePolicyResponse = $this->segmentTogglePolicyGateway->getTogglePolicy( $toggleName, new SegmentStub( $segmentId, 10, true ) );
-        PHPUnit_Framework_Assert::assertFalse( $togglePolicyResponse->isEnabled() );
-        PHPUnit_Framework_Assert::assertFalse( $togglePolicyResponse->isNotSet() );
+        Assert::assertFalse( $togglePolicyResponse->isEnabled() );
+        Assert::assertFalse( $togglePolicyResponse->isNotSet() );
     }
 
     /**
@@ -270,6 +271,4 @@ class LabsTogglesContext implements \Behat\Behat\Context\Context
     {
         $this->autoSubscribersGateway->setUserSubscriberStatus( new UserStub( $userName ), true );
     }
-
-    
 }

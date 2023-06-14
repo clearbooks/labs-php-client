@@ -11,12 +11,12 @@
     "autoload": {
         "psr-4": {"Clearbooks\\Labs\\Client\\": ["src/", "test/"]}
     },
-    "require-dev": { 
-        "codeclimate/php-test-reporter": "dev-master",
-        "behat/behat": "^3.7",
-        "phpunit/phpunit": "^8"
-    },
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "behat/behat": "^3.13",
+        "phpunit/phpunit": "^9.6.9",
+        "scrutinizer/ocular": "^1.9"
     }
 }
